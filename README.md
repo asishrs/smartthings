@@ -24,7 +24,7 @@ This repository contains device handler and smart-app for Ring Alarm integration
  - Select  **My Device Handlers**
  - Click on the **+ New Device Handler** button on the right.
  - On the **New Device Handler** page, Select the Tab **From Code**
-  - Copy the [ring-alarm-device-handler.groovy](smartthings/ring-alarm-device-handler.groovy) source code and paste it into the IDE editor window.
+  - Copy the [ringalarm.groovy](devicetypes/asishrs/ringalarm.src/ringalarm.groovy) source code and paste it into the IDE editor window - edit as shown below for devices/counts.
   - Click the **Create** button at the bottom.
   - Click the blue **Save** button above the editor window.
   - Click the **Publish** button next to it and select **For Me**. You have now self-published your Device Handler
@@ -39,6 +39,21 @@ def rangeExtenderCount = 1
 def keypadCount = 1
 ```
 
+### Install Alarm Device  
+  - Select **My Devices**
+  - Click on the **+ New Device** button on the right.
+  - Fill the Name and Network ID Field (can be anything you like)
+  - Under Type, select RingAlarm
+  - Select appropriate options under Location and Hub
+  - Click **Create**
+  - Click **Preferences (edit)** 
+  - Input below:
+    - **Ring User Name**
+    - **Ring Password**
+    - **API Url** - Invoke URL from Lambda setup (should end with .com/default)
+    - **API Key** - API key from Lambda setup
+    - **Location Id** - Location Id value found in browser Network panel.
+    - **ZID** - ZID value found in browser Network panel.
 
 
 ### Install SmartThings App
@@ -47,7 +62,7 @@ def keypadCount = 1
  - Select **My SmartApps**
 - Click on the **+ New SmartApp** button on the right.
 - On the **New SmartApp**  page, Select the Tab **From Code**
-- Copy the [ring-alarm-app.groovy](smartthings/ring-alarm-app.groovy) source code and paste it into the IDE editor window
+- Copy the [ringalarm-watch.groovy](smartapps/asishrs/ringalarm-watch.src/ringalarm-watch.groovy) source code and paste it into the IDE editor window
 - Click the **Create** button at the bottom.
 - Click the blue **Save** button above the editor window.
 - Click the **Publish** button next to it and select **For Me**. You have now self-published your SmartApp
