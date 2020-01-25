@@ -22,7 +22,7 @@
  *
  */
 metadata {
-	definition (name: "Ring Alarm With Sensors v2", namespace: "asishrs", author: "Asish Soudhamma", cstHandler: true) {
+	definition (name: "Ring Alarm", namespace: "asishrs", author: "Asish Soudhamma", cstHandler: true) {
 		capability "Alarm"
 		capability "Polling"
         capability "Presence Sensor"

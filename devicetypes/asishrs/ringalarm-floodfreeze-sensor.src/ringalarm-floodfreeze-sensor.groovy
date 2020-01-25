@@ -22,7 +22,7 @@
  *
  */
  metadata {
-	definition (name: "Ring Alarm - Flood-freeze Sensor", namespace: "asishrs", author: "Asish Soudhamma", cstHandler: true) {
+	definition (name: "RingAlarm Flood-freeze Sensor", namespace: "asishrs", author: "Asish Soudhamma", cstHandler: true) {
 		capability "Water Sensor"
         capability "Sensor"
 	}
