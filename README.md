@@ -78,15 +78,15 @@ Again, note the response at the top of the My SmartApps page. It should be somet
     1. [ring-alarm.groovy](devicetypes/asishrs/ring-alarm.src/ring-alarm.groovy)
 
 #### SmartThings App
- - *(optional)* Login at http://graph.api.smartthings.com
- - *(optional)* Select **My Locations**, select the location you want to use.
- - Select **My SmartApps**
-- Click on the **+ New SmartApp** button on the right.
-- On the **New SmartApp**  page, Select the Tab **From Code**
-- Copy the [ring-alarm-manager.groovy](smartapps/asishrs/ring-alarm.src/ring-alarm-manager.groovy) source code and paste it into the IDE editor window
-- Click the **Create** button at the bottom.
-- Click the blue **Save** button above the editor window.
-- Click the **Publish** button next to it and select **For Me**. You have now self-published your SmartApp
+1. *(optional)* Login at http://graph.api.smartthings.com
+1. *(optional)* Select **My Locations**, select the location you want to use.
+1. Select **My SmartApps**
+1. Click on the **+ New SmartApp** button on the right.
+1. On the **New SmartApp**  page, Select the Tab **From Code**
+1. Copy the [ring-alarm-manager.groovy](smartapps/asishrs/ring-alarm.src/ring-alarm-manager.groovy) source code and paste it into the IDE editor window
+1. Click the **Create** button at the bottom.
+1. Click the blue **Save** button above the editor window.
+1. Click the **Publish** button next to it and select **For Me**. You have now self-published your SmartApp
 
 ## Setup Alarm Device  
   1. (optional) Login at http://graph.api.smartthings.com
