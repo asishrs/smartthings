@@ -1,6 +1,6 @@
 # SmartThings - Ring Alarm Device & Smart-App
 
-> :mega: This is the `version 2 `of this application. If you are looking for the `version 1`, visit https://github.com/asishrs/smartthings-ringalarm
+> :mega: This is the `version 3 `of this application. If you are looking for older version, visit https://github.com/asishrs/smartthings-ringalarm
 
 This repository contains device handler and smart-app for Ring Alarm integration with SmartThings. In order to use this, you need to deploy the API part as described [here](https://github.com/asishrs/smartthings-ringalarmv2 ).
 
@@ -16,74 +16,122 @@ This repository contains device handler and smart-app for Ring Alarm integration
 - Motion Sensor
 - Contact Sensor
 - Z-Wave Range Extender 
+- Flood Freeze
 
+## Installation
 
-### Manual Install SmartThings Device Handler
- - Login at http://graph.api.smartthings.com
- - Select **My Locations**, select the location you want to use.
- - Select  **My Device Handlers**
- - Click on the **+ New Device Handler** button on the right.
- - On the **New Device Handler** page, Select the Tab **From Code**
-  - Copy the [ringalarm.groovy](devicetypes/asishrs/ringalarm.src/ringalarm.groovy) source code and paste it into the IDE editor window - edit as shown below for devices/counts.
-  - Click the **Create** button at the bottom.
-  - Click the blue **Save** button above the editor window.
-  - Click the **Publish** button next to it and select **For Me**. You have now self-published your Device Handler
+### GitHub Integration (Recommended Method)
+It is highly recommended that you use the GitHub Integration that SmartThings offers with their IDE. This will make it much easier for you to keep up to date with changes over time. For the general steps needed for setting up GitHub IDE integration, please visit [this](http://docs.smartthings.com/en/latest/tools-and-ide/github-integration.html) and follow the steps for performing the setup.
 
-:pencil2: Update the number of ring devices in the code, check for below part.
+If this is your first time installing this, first follow these steps to link your IDE with the code repository. 
+1. Login to the IDE at ide.smartthings.com
+1. Click on My Locations at the top of the page
+1. Click on the name of the location that you want to install to
+1. Click on the **My Device Handlers** tab
+1. Click **Settings**
+1. Click **Add new repository** and use the following parameters:
+    1. Owner: asishrs
+    1. Name: smartthings
+    1. Branch: master
+1. Click **Save**
 
-```
-//Define number of devices here.
-def motionSensorCount = 5
-def contactSensorCount = 6
-def rangeExtenderCount = 1
-def keypadCount = 1
-```
+#### Installing Device Handlers
+Once the repository is connected to your IDE, use the GitHub integration to install the current version into your workspace. In the IDE:
 
-### Install Alarm Device  
-  - Select **My Devices**
-  - Click on the **+ New Device** button on the right.
-  - Fill the Name and Network ID Field (can be anything you like)
-  - Under Type, select RingAlarm
-  - Select appropriate options under Location and Hub
-  - Click **Create**
-  - Click **Preferences (edit)** 
-  - Input below:
-    - **Ring User Name**
-    - **Ring Password**
-    - **API Url** - Invoke URL from Lambda setup (should end with .com/default)
-    - **API Key** - API key from Lambda setup
-    - **Location Id** - Location Id value found in browser Network panel.
-    - **ZID** - ZID value found in browser Network panel.
+1. Click **Update from Repo** and select the `smartthings` repository you just added
+1. Find and Select below device handlers Select Publish(bottom right of screen near the Cancel button)
+    1. `ring-alarm-contact-sensor.groovy`
+    1. `ring-alarm-floodfreeze-sensor.groovy`
+    1. `ring-alarm-motion-sensor.groovy`
+    1. `ring-alarm.groovy`
+1. Click **Execute Update**
 
+Note the response at the top of the My Devices Handlers page. It should be something like "Updated 0 devices and created 4 new devices, 4 published"
+Verify that the four devices show up in the list and are marked with Status Published (NOTE: You may have to reload the My Device Handlers screen for the devices to show up properly.)
 
-### Install SmartThings App
+#### Installing SmartApps
+Once you have the Device Handlers added and published in your IDE, it is time to add the SmartApps.
+
+1. Click on the **My SmartApps** tab
+1. Click **Update from Repo** and select the `smartthings` repository you added earlier
+1. Select the check boxes next to `ring-alarm-manager.groovy`
+1. Select **Publish**(bottom right of screen near the Cancel button)
+1. Click **Execute Update**
+
+Again, note the response at the top of the My SmartApps page. It should be something like "Updated 0 and created 1 SmartApps, 1 published"
+
+### Manual Install 
+
+#### SmartThings Device Handler
+ 1. Login at http://graph.api.smartthings.com
+ 1. Select **My Locations**, select the location you want to use.
+ 1. Select  **My Device Handlers**
+ 1. Click on the **+ New Device Handler** button on the right.
+ 1. On the **New Device Handler** page, Select the Tab **From Code**
+ 1. Copy the [ring-alarm-contact-sensor.groovy](devicetypes/asishrs/ring-alarm-contact-sensor.src/ring-alarm-contact-sensor.groovy) source code and paste it into the IDE editor window.
+ 1. Click the **Create** button at the bottom.
+ 1. Click the blue **Save** button above the editor window.
+ 1. Click the **Publish** button next to it and select **For Me**. You have now self-published your Device Handler
+ 1. Repeat step 1 to 9 for below devices as well.
+    1. [ring-alarm-floodfreeze-sensor.groovy](devicetypes/asishrs/ring-alarm-floodfreeze-sensor.src/ring-alarm-floodfreeze-sensor.groovy)
+    1. [ring-alarm-motion-sensor.groovy](devicetypes/asishrs/ring-alarm-motion-sensor.src/ring-alarm-motion-sensor.groovy)
+    1. [ring-alarm.groovy](devicetypes/asishrs/ring-alarm.src/ring-alarm.groovy)
+
+#### SmartThings App
  - *(optional)* Login at http://graph.api.smartthings.com
  - *(optional)* Select **My Locations**, select the location you want to use.
  - Select **My SmartApps**
 - Click on the **+ New SmartApp** button on the right.
 - On the **New SmartApp**  page, Select the Tab **From Code**
-- Copy the [ringalarm-watch.groovy](smartapps/asishrs/ringalarm-watch.src/ringalarm-watch.groovy) source code and paste it into the IDE editor window
+- Copy the [ring-alarm-manager.groovy](smartapps/asishrs/ring-alarm.src/ring-alarm-manager.groovy) source code and paste it into the IDE editor window
 - Click the **Create** button at the bottom.
 - Click the blue **Save** button above the editor window.
 - Click the **Publish** button next to it and select **For Me**. You have now self-published your SmartApp
 
-## Setup your SmartThings App
-This is based on *Smarthing Classic App*.
+## Setup Alarm Device  
+  1. (optional) Login at http://graph.api.smartthings.com
+  1. (optional) Select My Locations, select the location you want to use.
+  - Select **My Devices**
+  - Click on the **+ New Device** button on the right.
+  - Fill the Name and Network ID Field (can be anything you like)
+  - Under Type, select **Ring Alarm**
+  - Select appropriate options under Location and Hub
+  - Click **Create**
 
-- Open your SmartThings app and go to **My Home**
-- Tap on the Ring Alarm and then tap on the **settings** (*gear icon*).
-- Add below
-  - **Ring User Name**
-  - **Ring Password**
-  - **API Url** - Invoke URL from Lambda setup
-  - **API Key** - API key from Lambda setup
-  - **Location Id** - Location Id value found in browser Network panel.
-  - **ZID** - ZID value found in browser Network panel.
-  - **Polling Interval** - Polling interval between Ring Status API call.
+## Setup SmartThings App
+This is based on *SmartThing Classic App*.
 
-|                           My Home                            | Ring Alarm Settings                                          |
-| :----------------------------------------------------------: | ------------------------------------------------------------ |
-| ![SmartThings - My Home](images/smarthings_classic_app.jpg?raw=true "SmartThings Classic- Home") | ![SmartThings - My Home](images/smartthings-classic-app-settings.jpg?raw=true "SmartThings Classic- Home") |
+1. Open your SmartThings app and go to **Marketplace**
+1. Tap on the **SmartApps** and then scroll to the bottom of the page and tap on **My Apps**
+1. Tap on **Ring Alarm Manager**
+1. Configuration
+    1. AWS API for SmartThings Integration
+        1. Pause AWS Ring Integration - Choose that only of you want to temporarily disable the integration.
+        1. API Url - AWS API URL for Ring Alarm Lambda
+        1. API Key -  AWS API Key for Ring Alarm Lambda
+        1. Polling Interval - Choose the desired interval, default 5 minutes
+    1. Ring Account
+        1. Ring Two Factor Enabled - Select this if you have enabled Two factor Authentication in Ring Account.
+        1. Do you have an existing Refresh Key - If you already have a refresh key for Ring Two Enabled Account, you can select this. You will be asked to provide that in the next step.
+        1. Ring user name - Ring user email address
+        1. Ring password - Ring account password.
+        
+        If you said `YES` to step 2.1, proceed as below.
+
+        1. Tap on **Finalize the Ring Account Setup**.
+        1. If you have selected yes to step 2.1, you will be receiving a Text message from Ring on your registered mobile. Enter the text message on **2FA Code** 
+        1.  Tap on **Account Status** to see the Ring Account Connection Status. If the connection is successful, you can see the ZID and Location.
+
+        If you said `NO` to step 2.1, proceed as below.
+        
+        1.  Tap on **Account Status** to see the Ring Account Connection Status. If the connection is successful, you can see the ZID and Location.
+
+    1. SmartThings Alarm Device
+        1. Select the Alarm Device you installed. This is mandatory information otherwise the SmartApp cannot refresh the Alarm and Sensor status.
+        1. You choose the next three options based on how do you want the alarm to behave for SmartThings mode changes. This is not same as SHM mode.  
+
+    1. SmartThings Notifications
+        1. You can choose the notification options as well as a custom name on this.  
 
 ## Support
 
