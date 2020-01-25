@@ -91,12 +91,12 @@ Again, note the response at the top of the My SmartApps page. It should be somet
 ## Setup Alarm Device  
   1. (optional) Login at http://graph.api.smartthings.com
   1. (optional) Select My Locations, select the location you want to use.
-  - Select **My Devices**
-  - Click on the **+ New Device** button on the right.
-  - Fill the Name and Network ID Field (can be anything you like)
-  - Under Type, select **Ring Alarm**
-  - Select appropriate options under Location and Hub
-  - Click **Create**
+  1. Select **My Devices**
+  1. Click on the **+ New Device** button on the right.
+  1. Fill the Name and Network ID Field (can be anything you like)
+  1. Under Type, select **Ring Alarm**
+  1. Select appropriate options under Location and Hub
+  1. Click **Create**
 
 ## Setup SmartThings App
 This is based on *SmartThing Classic App*.
