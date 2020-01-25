@@ -22,7 +22,7 @@
  *
  */
  metadata {
-	definition (name: "Ring Contact Sensor", namespace: "asishrs", author: "Asish Soudhamma", cstHandler: true) {
+	definition (name: "Ring Alarm - Contact Sensor", namespace: "asishrs", author: "Asish Soudhamma", cstHandler: true) {
 		capability "Contact Sensor"
         capability "Sensor"
 		capability "Refresh"
