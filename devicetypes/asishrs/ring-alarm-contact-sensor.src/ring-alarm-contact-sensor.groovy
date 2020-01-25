@@ -22,15 +22,31 @@
  *
  */
  metadata {
-	definition (name: "RingAlarm Flood-freeze Sensor", namespace: "asishrs", author: "Asish Soudhamma", cstHandler: true) {
-		capability "Water Sensor"
+	definition (name: "Ring Alarm Contact Sensor", namespace: "asishrs", author: "Asish Soudhamma", cstHandler: true) {
+		capability "Contact Sensor"
         capability "Sensor"
+		capability "Refresh"
 	}
 
 	tiles() {
-		standardTile("water", "device.water", decoration: "flat", width: 2, height: 2) {
-            state("dry", label: '${name}', icon: "st.alarm.water.dry", backgroundColor: "#ffffff")
-            state("wet", label: '${name}',icon: "st.alarm.water.wet", backgroundColor: "#00a0dc")
+        standardTile("contact", "device.contact", decoration: "flat", width: 2, height: 2) {
+        	state("closed", label:'${name}', icon:"st.contact.contact.closed", backgroundColor:"#00A0DC")
+			state("open", label:'${name}', icon:"st.contact.contact.open", backgroundColor:"#e86d13")     
         }
+		main(["contact"])
 	}
+}
+
+def refresh() {
+	log.debug("Ring Contact Sensor child refresh - ${device.deviceNetworkId}")
+    parent.childRefresh(device.deviceNetworkId)
+}
+
+def installed () {
+	log.debug("Ring Contact Sensor Installed - parent ${parent}, ${device.deviceNetworkId}")
+}
+
+def uninstalled () {
+	log.debug("Ring Contact Sensor Uninstalled - parent ${parent}, ${device.deviceNetworkId}")
+	//parent.delete()
 }

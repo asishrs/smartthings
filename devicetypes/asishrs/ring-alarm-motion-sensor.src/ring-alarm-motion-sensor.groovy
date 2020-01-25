@@ -22,7 +22,7 @@
  *
  */
  metadata {
-	definition (name: "RingAlarm Motion Sensor", namespace: "asishrs", author: "Asish Soudhamma", cstHandler: true) {
+	definition (name: "Ring Alarm Motion Sensor", namespace: "asishrs", author: "Asish Soudhamma", cstHandler: true) {
 		capability "Motion Sensor"
         capability "Sensor"
 	}
