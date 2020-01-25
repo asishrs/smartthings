@@ -21,244 +21,230 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-
-preferences {
-	input(name: "username", type: "text", title: "Username", required: "true", description: "Ring Alarm Username")
-	input(name: "password", type: "password", title: "Password", required: "true", description: "Ring Alarm Password")
-	input(name: "apiurl", type: "text", title: "API Url", required: "true", description: "Ring Alarm AWS API URL")
-	input(name: "apikey", type: "text", title: "API Key", required: "true", description: "Ring Alarm API Api Key")
-	input(name: "locationId", type: "text", title: "Location Id", required: "false", description: "Ring Alarm Location Id")
-	input(name: "zid", type: "text", title: "ZID", required: "false", description: "Ring Alarm ZID")
-    input(name: "pollInterval", type: "enum", title: "Polling Interval", required: "true", options: ["1 minute", "5 minutes", "10 minutes", "15 minutes"], defaultValue: "5")
-}
-
-metadata {	
-	definition (name: "RingAlarmV2", namespace: "asishrs", author: "Asish Soudhamma") {
+metadata {
+	definition (name: "Ring Alarm With Sensors v2", namespace: "asishrs", author: "Asish Soudhamma", cstHandler: true) {
 		capability "Alarm"
 		capability "Polling"
-        capability "Contact Sensor"
+        capability "Presence Sensor"
 		command "off"
 		command "home"
 		command "away"
+        command "triggeroff"
+		command "triggerhome"
+		command "triggeraway"
 		command "update_state"
+        command "createChildDevices"
+        command "refreshDeviceStatus"
+        command "refreshDevices"
+        command "updateEventData"
 		attribute "events", "string"
 		attribute "messages", "string"
 		attribute "status", "string"
+        attribute "mode", "string"
+        attribute "alarmStatus", "string"
+        singleInstance: true
 	}
 
 	tiles(scale: 2) {
-    multiAttributeTile(name:"status", type: "generic", width: 6, height: 4){
-        tileAttribute ("device.status", key: "PRIMARY_CONTROL") {
-            attributeState "off", label:'${name}', icon: "st.security.alarm.off", backgroundColor: "#1998d5"
-            attributeState "home", label:'${name}', icon: "st.Home.home4", backgroundColor: "#e58435"
-            attributeState "away", label:'${name}', icon: "st.security.alarm.on", backgroundColor: "#e53935"
-			attributeState "pending off", label:'${name}', icon: "st.security.alarm.off", backgroundColor: "#ffffff"
-			attributeState "pending away", label:'${name}', icon: "st.Home.home4", backgroundColor: "#ffffff"
-			attributeState "pending home", label:'${name}', icon: "st.security.alarm.on", backgroundColor: "#ffffff"
-			attributeState "away_count", label:'countdown', icon: "st.security.alarm.on", backgroundColor: "#ffffff"
-			attributeState "failed set", label:'error', icon: "st.secondary.refresh", backgroundColor: "#d44556"
-			attributeState "alert", label:'${name}', icon: "st.alarm.beep.beep", backgroundColor: "#ffa81e"
-			attributeState "alarm", label:'${name}', icon: "st.security.alarm.alarm", backgroundColor: "#d44556"
-        }
-    }	
-	
-    standardTile("off", "device.alarm", width: 2, height: 2, canChangeIcon: false, inactiveLabel: true, canChangeBackground: false) {
-        state ("off", label:"off", action:"off", icon: "st.security.alarm.off", backgrosundColor: "#008CC1", nextState: "pending")
-        state ("away", label:"off", action:"off", icon: "st.security.alarm.off", backgroundColor: "#505050", nextState: "pending")
-        state ("home", label:"off", action:"off", icon: "st.security.alarm.off", backgroundColor: "#505050", nextState: "pending")
-        state ("pending", label:"pending", icon: "st.security.alarm.off", backgroundColor: "#ffffff")
-	}
-	
-    standardTile("away", "device.alarm", width: 2, height: 2, canChangeIcon: false, inactiveLabel: true, canChangeBackground: false) {
-        state ("off", label:"away", action:"away", icon: "st.security.alarm.on", backgroundColor: "#505050", nextState: "pending") 
-		state ("away", label:"away", action:"away", icon: "st.security.alarm.on", backgroundColor: "#008CC1", nextState: "pending")
-        state ("home", label:"away", action:"away", icon: "st.security.alarm.on", backgroundColor: "#505050", nextState: "pending")
-		state ("pending", label:"pending", icon: "st.security.alarm.on", backgroundColor: "#ffffff")
-		state ("away_count", label:"pending", icon: "st.security.alarm.on", backgroundColor: "#ffffff")
-	}
-	
-    standardTile("home", "device.alarm", width: 2, height: 2, canChangeIcon: false, inactiveLabel: true, canChangeBackground: false) {
-        state ("off", label:"home", action:"home", icon: "st.Home.home4", backgroundColor: "#505050", nextState: "pending")
-        state ("away", label:"home", action:"home", icon: "st.Home.home4", backgroundColor: "#505050", nextState: "pending")
-		state ("home", label:"home", action:"home", icon: "st.Home.home4", backgroundColor: "#008CC1", nextState: "pending")
-		state ("pending", label:"pending", icon: "st.Home.home4", backgroundColor: "#ffffff")
-	}
-    
-    // Base Station
-    standardTile("ringbase", "device.ringbase", label: "Base Station", decoration: "flat", width: 6, height: 1) {
-            state("unknown", label: '${name}', icon: "st.unknown.unknown.unknown", backgroundColor: "#505050")
-            state("online", label: '${name}',icon: "st.security.alarm.clear", backgroundColor: "#ffffff")
-   		 	state("offline", label: '${name}', icon: "st.alarm.alarm.alarm", backgroundColor: "#00a0dc")   
-	}
-    
-    //Define number of devices here.
-    def motionSensorCount = 5
-    def contactSensorCount = 6
-    def rangeExtenderCount = 1
-    def keypadCount = 1
-    
-    //Motion Sensor
-    (1..motionSensorCount).each { n ->	
-    	//log.info("Adding Motion Sensor - ${n}")
-        standardTile("ringmotion$n", "device.ringmotion$n", decoration: "flat", width: 2, height: 2) {
-            state("unknown", label: '${name}', icon: "st.unknown.unknown.unknown", backgroundColor: "#505050")
-            state("clear", label: '${name}', icon: "st.motion.motion.inactive", backgroundColor: "#00A0DC")
-       		state("motion", label: '${name}',icon: "st.motion.motion.active", backgroundColor: "#e86d13")
+        multiAttributeTile(name:"status", type: "generic", width: 6, height: 4) {
+            tileAttribute ("device.status", key: "PRIMARY_CONTROL") {
+                attributeState "off", label:'${name}', icon: "st.security.alarm.off", backgroundColor: "#1998d5"
+                attributeState "home", label:'${name}', icon: "st.Home.home4", backgroundColor: "#e58435"
+                attributeState "away", label:'${name}', icon: "st.security.alarm.on", backgroundColor: "#e53935"
+                attributeState "pending off", label:'${name}', icon: "st.security.alarm.off", backgroundColor: "#ffffff"
+                attributeState "pending away", label:'${name}', icon: "st.Home.home4", backgroundColor: "#ffffff"
+                attributeState "pending home", label:'${name}', icon: "st.security.alarm.on", backgroundColor: "#ffffff"
+                attributeState "away_count", label:'countdown', icon: "st.security.alarm.on", backgroundColor: "#ffffff"
+                attributeState "failed set", label:'error', icon: "st.secondary.refresh", backgroundColor: "#d44556"
+                attributeState "alert", label:'${name}', icon: "st.alarm.beep.beep", backgroundColor: "#ffa81e"
+                attributeState "alarm", label:'${name}', icon: "st.security.alarm.alarm", backgroundColor: "#d44556"
+            }
+        }	
+
+        standardTile("off", "device.alarm", width: 2, height: 2, canChangeIcon: false, inactiveLabel: true, canChangeBackground: false) {
+            state ("off", label:"off", action:"triggeroff", icon: "st.security.alarm.off", backgrosundColor: "#008CC1", nextState: "pending")
+            state ("away", label:"off", action:"triggeroff", icon: "st.security.alarm.off", backgroundColor: "#505050", nextState: "pending")
+            state ("home", label:"off", action:"triggeroff", icon: "st.security.alarm.off", backgroundColor: "#505050", nextState: "pending")
+            state ("pending", label:"pending", icon: "st.security.alarm.off", backgroundColor: "#ffffff")
         }
         
-	}
-    
-    // Contact Sensor
-    (1..contactSensorCount).each { n ->	
-    	//log.info("Adding Contact Sensor - ${n}")
-       	standardTile("ringcontact$n", "device.ringcontact$n", decoration: "flat", width: 2, height: 2) {
-        	state("unknown", label: '${name}', icon: "st.unknown.unknown.unknown", backgroundColor: "#505050")
-        	state("closed", label:'${name}', icon:"st.contact.contact.closed", backgroundColor:"#00A0DC")
-			state("open", label:'${name}', icon:"st.contact.contact.open", backgroundColor:"#e86d13")     
+        standardTile("home", "device.alarm", width: 2, height: 2, canChangeIcon: false, inactiveLabel: true, canChangeBackground: false) {
+            state ("off", label:"home", action:"triggerhome", icon: "st.Home.home4", backgroundColor: "#505050", nextState: "pending")
+            state ("away", label:"home", action:"triggerhome", icon: "st.Home.home4", backgroundColor: "#505050", nextState: "pending")
+            state ("home", label:"home", action:"triggerhome", icon: "st.Home.home4", backgroundColor: "#008CC1", nextState: "pending")
+            state ("pending", label:"pending", icon: "st.Home.home4", backgroundColor: "#ffffff")
+        }
+
+        standardTile("away", "device.alarm", width: 2, height: 2, canChangeIcon: false, inactiveLabel: true, canChangeBackground: false) {
+            state ("off", label:"away", action:"triggeraway", icon: "st.security.alarm.on", backgroundColor: "#505050", nextState: "pending") 
+            state ("away", label:"away", action:"triggeraway", icon: "st.security.alarm.on", backgroundColor: "#008CC1", nextState: "pending")
+            state ("home", label:"away", action:"triggeraway", icon: "st.security.alarm.on", backgroundColor: "#505050", nextState: "pending")
+            state ("pending", label:"pending", icon: "st.security.alarm.on", backgroundColor: "#ffffff")
+            state ("away_count", label:"pending", icon: "st.security.alarm.on", backgroundColor: "#ffffff")
+        }
+
+        // Base Station
+        standardTile("ringbase", "device.ringbase", label: "Base Station", decoration: "flat", width: 6, height: 1) {
+                state("unknown", label: '${name}', icon: "st.unknown.unknown.unknown", backgroundColor: "#505050")
+                state("online", label: '${name}',icon: "st.security.alarm.clear", backgroundColor: "#ffffff")
+                state("offline", label: '${name}', icon: "st.alarm.alarm.alarm", backgroundColor: "#00a0dc")   
         }
         
-	}
-    
-    // Range Extender
-    (1..rangeExtenderCount).each { n ->	
-    	//log.info("Adding Range Extender - ${n}")
-       	standardTile("ringrange$n", "device.ringrange$n", decoration: "flat", width: 2, height: 2) {
-        	state("unknown", label: '${name}', icon: "st.unknown.unknown.unknown", backgroundColor: "#505050")
-            state("online", label: '${name}',icon: "st.samsung.da.RC_ic_charge", backgroundColor: "#ffffff")
-   		 	state("offline", label: '${name}', icon: "st.samsung.da.RC_ic_charge", backgroundColor: "#e86d13")
-		}
+        def rangeExtenderCount = 1
+        def keypadCount = 1
+
+        // Range Extender
+        (1..rangeExtenderCount).each { n ->	
+            standardTile("ringrange$n", "device.ringrange$n", decoration: "flat", width: 2, height: 2) {
+                state("unknown", label: '${name}', icon: "st.unknown.unknown.unknown", backgroundColor: "#505050")
+                state("online", label: '${name}',icon: "st.samsung.da.RC_ic_charge", backgroundColor: "#ffffff")
+                state("offline", label: '${name}', icon: "st.samsung.da.RC_ic_charge", backgroundColor: "#e86d13")
+            }
+
+        }
+
+        // Keypad
+        (1..keypadCount).each { n ->	
+            standardTile("ringkeypad$n", "device.ringkeypad$n", decoration: "flat", width: 2, height: 2) {
+                state("unknown", label: '${name}', icon: "st.unknown.unknown.unknown", backgroundColor: "#505050")
+                state("online", label: '${name}',icon: "st.Home.home3", backgroundColor: "#ffffff")
+                state("offline", label: '${name}', icon: "st.Home.home3", backgroundColor: "#e86d13")
+            }
+
+        }
         
-	}
-          
-    // Keypad
-    (1..keypadCount).each { n ->	
-    	//log.info("Adding Keypad - ${n}")
-       	standardTile("ringkeypad$n", "device.ringkeypad$n", decoration: "flat", width: 2, height: 2) {
-            state("unknown", label: '${name}', icon: "st.unknown.unknown.unknown", backgroundColor: "#505050")
-            state("online", label: '${name}',icon: "st.Home.home3", backgroundColor: "#ffffff")
-   		 	state("offline", label: '${name}', icon: "st.Home.home3", backgroundColor: "#e86d13")
-		}
-        
-	}
-    
-    valueTile("log", "device.log", decoration: "flat", width: 6, height: 3) {
-    	state "poweron", label: '${currentValue}'
+        // Tile for showing Ring Events as Texts
+        valueTile("log", "device.log", decoration: "flat", width: 6, height: 3) {
+            state "poweron", label: '${currentValue}'
+        }
+
+        main(["status"])
     }
-        
-	main(["status"])
-	}
 }
 
 def installed() {
-  init()
+ 	init()
 }
 
 def updated() {
-  unschedule()
-  init()
+    unschedule()
+    //def originalChildDevices = getChildDevices()
+    //def addedChildren = createChildDevices()
+    // Remove devices that are no longer needed (assumes device order hasn't changed)
+    //def noLongerNeededDevices = deduct(originalChildDevices, addedChildren)
+    //removeChildDevices(noLongerNeededDevices)
+    // Now start polling
+    init()
 }
-  
-def init() {
-	log.info "Setting up Schedule (every ${settings.pollInterval})..."
-    switch(settings.pollInterval) {
-    	case "1 minute" : 
-        	runEvery1Minute(poll)
-            break
-        case "5 minutes" :
-        	runEvery5Minutes(poll)
-            break
-        case "10 minutes" :
-        	runEvery10Minutes(poll)
-            break
-        case "15 minutes" :
-        	runEvery15Minutes(poll)
-            break
-     	default:
-            runEvery5Minutes(poll)
-            break
+
+def deduct(originalChildDevices, addedChildren) {
+	// TODO: Maybe a groovier way to do this?
+	def result = originalChildDevices.clone()
+	addedChildren.each { toRemove -> 
+    	result.removeAll { it.deviceNetworkId == toRemove.deviceNetworkId }
+    }
+
+    return result
+}
+
+def uninstalled() {
+	removeChildDevices(getChildDevices())
+}
+
+def removeChildDevices(delete) {
+	log.info "removeChildDevices() -> Deleting devices: ${delete}"
+    delete.each {
+    	log.info "removeChildDevices() -> Trying to delete device ${it.deviceNetworkId}"
+        try {
+        	deleteChildDevice(it.deviceNetworkId)
+        } catch (Exception failedDeletingException) {
+        	log.error "removeChildDevices() -> Error deleting device {$it.deviceNetworkId}, remove usages and try updating preferences later. - ${failedDeletingException}"
+        }
     }
 }
 
-def pollingInterval() {
-	def value = 5
-    switch(settings.pollInterval) {
-    	case "1 minute" : 
-        	value = 1
-            break
-        case "5 minutes" :
-        	value = 5
-            break
-        case "10 minutes" :
-        	value = 10
-            break
-        case "15 minutes" :
-        	value = 15
-            break
-     	default:
-            value = 5
-            break
+def createChildDevices(ringAPIData) {
+	log.debug "createChildDevices() -> Searching for contact and motion sensors on Ring Alarm ${device.deviceNetworkId} with device ${ringAPIData}"
+    for (ringDevice in ringAPIData.deviceStatus) {
+    	//log.trace "Ring Device to add/update - ${ringDevice}"
+        switch (ringDevice.type) {
+            case 'sensor.contact' :
+                addSensor("Contact", ringDevice.id, ringDevice.name)
+            	break
+            case 'sensor.motion' :
+                addSensor("Motion", ringDevice.id, ringDevice.name)
+                break   
+            case 'sensor.flood-freeze' :
+                addSensor("Flood-freeze", ringDevice.id, ringDevice.name)
+                break   
+        }
     }
-    
-    value
+}
+
+def addSensor(type, id, name) {
+	def deviceId = "${device.deviceNetworkId}-${id}";
+	def currentChildren = getChildDevices()
+    def alreadyExistingChild = currentChildren?.find { it.deviceNetworkId == deviceId}
+
+    if (alreadyExistingChild) {
+    	//log.trace "addSensor() -> Sensor with type ${type} and ${deviceId} already exists, not adding it again."
+        return alreadyExistingChild
+    } else {
+        log.debug "addSensor() -> Adding sensor with type ${type} and ${deviceId}"
+        //DeviceWrapper addChildDevice(String typeName, String deviceNetworkId, hubId, Map properties)
+        return addChildDevice("Ring ${type} Sensor", deviceId, device.hubId,
+                              [isComponent: false, completedSetup: true, componentName: "${type}-${deviceId}", 
+                               componentLabel: "Ring ${name}", label: "Ring ${name}"])
+	}
+}
+
+def init() {
+	//
+}
+
+def triggeroff() {
+	log.info "triggeroff() -> Setting Ring Alarm mode to 'Off'"
+	callApiAndUpdateEvents('off')
+}
+
+def triggerhome() { 
+	log.info "triggerhome() -> Setting Ring Alarm mode to 'Home'"
+	callApiAndUpdateEvents('home')
+}
+
+def triggeraway() {
+	log.info "triggeraway() -> Setting Ring Alarm mode to 'Away'"
+	callApiAndUpdateEvents('away')
 }
 
 def off() {
-	log.info "Setting Ring Alarm mode to 'Off'"
-	ringApiCall ('off')
+	log.info "off() -> Setting Ring Alarm mode to 'Off'"
+	sendEvent(name: "status", value: "off")
 }
 
 def home() { 
-	log.info "Setting Ring Alarm mode to 'Home'"
-	ringApiCall ('home')
+	log.info "home() -> Setting Ring Alarm mode to 'Home'"
+	sendEvent(name: "status", value: "home")
 }
 
 def away() {
-	log.info "Setting Ring Alarm mode to 'Away'"
-	ringApiCall ('away')
+	log.info "away() -> Setting Ring Alarm mode to 'Away'"
+	sendEvent(name: "status", value: "away")
 }
 
 def update_state() {
-	log.info "Refreshing Ring AlarmV2 state..."
-	poll()
+	log.info "update_state() -> Refreshing Ring AlarmV2 state..."
+	refreshDevices()
 }
 
-def ringApiCall(state){
-	def timeout = false;
-	def params = [
-		uri: "${settings.apiurl}/${state}",
-		headers: [
-			'x-api-key':settings.apikey
-		],
-		body: [
-			user: settings.username,
-			password: settings.password,
-			locationId: settings.locationId,
-			zid: settings.zid,
-            historyLimit: 10
-		]
-	]
-
-	try {
-		httpPostJson(params) { resp ->
-			log.debug "Ring Alarm ${state.toUpperCase()} response data: ${resp.data}"
-		}
-		sendEvent(name: 'alarm', value: state)
-		sendEvent(name: "status", value: state)
-		sendEvent(name: 'presence', value: state)
-	} catch (e) {
-		timeout = true
-		log.debug "Ring Alarm SET to ${state.toUpperCase()} Error: $e"
-	}
-
-	if (!timeout) {
-    	runIn(2, poll)
-    } else {
-    	runIn(10, poll)
-    }
+def callApiAndUpdateEvents(ringMode) {
+    sendEvent(name: 'mode', value: ringMode)
+    sendEvent(name: 'alarm', value: ringMode)
+    sendEvent(name: "status", value: "pending ${ringMode}")
 }
 
 def humanReadableAlarmStatus(val) {
-	log.info "Ring Status (API) ${val}"
+	//log.info "Ring Status (API) ${val}"
     def result
     switch (val) {
         case 'none':
@@ -283,12 +269,12 @@ def humanReadableAlarmStatus(val) {
             result = 'off'
             break
     }   
-    log.info "Ring Status (Display) ${result}"
+    //log.info "humanReadableAlarmStatus() -> Ring Status (Display) ${result}"
     result
 }
 
 def humanReadableEventStatus(val) {
-	log.info "Ring Event (API) ${val}"
+	//log.info "Ring Event (API) ${val}"
     def result
     switch (val) {
         case 'security-panel.alarming':
@@ -304,108 +290,134 @@ def humanReadableEventStatus(val) {
             result = ''
             break
     }   
-    log.info "Ring Event (Display) ${result}"
+    //log.info "humanReadableEventStatus() -> Ring Event (Display) ${result}"
     result
 }
 
-def poll() {
-    log.info "Checking Ring Alarm Status V2."
-	def params = [
-		uri: "${settings.apiurl}/status",
-		headers: [
-        	'x-api-key':settings.apikey
-		],
-		body: [
-			user: settings.username,
-			password: settings.password,
-			locationId: settings.locationId,
-			zid: settings.zid,
-            historyLimit: 10
-		]
-	]
+public updatePref(val) {
+	log.info "Ring Event Shared value ${val}"
+}
 
-	try {
-		httpPostJson(params) { resp ->
-        	log.debug "Ring Alarm Status Response data: ${resp.data}"
-            def contactCount = 0
-            def motionCount = 0
-            def keypadCount = 0
-            def rangeExtenderCount = 0
-            for (device in resp.data.deviceStatus) {
-            	log.debug "Ring Device: ${device.name}, ${device.type}, ${device.faulted}, ${device.mode}"
-                if (device.type == 'security-panel') {
-                	def alarmStatus = humanReadableAlarmStatus(device.mode)
-                	log.debug "Ring Alarm Status: ${device.mode}, ${alarmStatus}"
-                    sendEvent(name: "alarm", value: alarmStatus)
-                    sendEvent(name: "status", value: alarmStatus)
-                    sendEvent(name: 'presence', value: alarmStatus)
-                } 
-                
-                log.debug "Current Count [contactCount - ${contactCount}], [motionCount - ${motionCount}], [keypadCount - ${keypadCount}], [rangeExtenderCount - ${rangeExtenderCount}]"
-                switch (device.type) {
-                    case 'sensor.contact' :
-                        if (device.faulted) 
-                        	sendEvent(name: "ringcontact${++contactCount}", value: "open", isStateChange: true, descriptionText: "${device.name} is Open")
-                        else
-                            sendEvent(name: "ringcontact${++contactCount}", value: "closed", isStateChange: true, descriptionText: "${device.name} is Closed")
-                        break
-                    case 'range-extender.zwave' :
-                        if (device.faulted) 
-                            sendEvent(name: "ringrange${++rangeExtenderCount}", value: "offline", isStateChange: true, descriptionText: "${device.name} is Offline")
-                        else
-                             sendEvent(name: "ringrange${++rangeExtenderCount}", value: "online", isStateChange: true, descriptionText: "${device.name} is Online")
-                        break
-                    case 'security-keypad' :
-                        if (device.faulted) 
-                            sendEvent(name: "ringkeypad${++keypadCount}", value: "offline", isStateChange: true, descriptionText: "${device.name} is Offline")
-                        else
-                            sendEvent(name: "ringkeypad${++keypadCount}", value: "online", isStateChange: true, descriptionText: "${device.name} is Online")
-                        break
-                    case 'sensor.motion' :
-                        if (device.faulted) 
-                            sendEvent(name: "ringmotion${++motionCount}", value: "motion", isStateChange: true, descriptionText: "${device.name} - Motion Detected")
-                        else
-                            sendEvent(name: "ringmotion${++motionCount}", value: "clear", isStateChange: true, , descriptionText: "${device.name} - Stopped Detecting Motion")
-                        break   
-                    case 'hub.redsky' :
-                        if (device.faulted) 
-                            sendEvent(name: "ringbase", value: "offline", isStateChange: true, descriptionText: "${device.name} is Online")
-                        else
-                            sendEvent(name: "ringbase", value: "online", isStateChange: true, descriptionText: "${device.name} is Offline")
-                        break
-                }
-                
-            }
-            log.debug "Processing Logs: ${resp.data.events}"
-            def logs = new StringBuilder()
-            def notifyUser = true
-            for (event in resp.data.events) {
-            	log.debug "Ring Event: ${event.name}, ${event.type}, ${event.time}" 
-                if(notifyUser) {
-                    def nowTime = new Date().time
-                    log.debug "Dates Now ${nowTime}, Event ${event.time}"
-                    // (current time in milli - event time in milli) > interval * 60000
-                    log.debug "Diff ${(nowTime - event.time)}, Time ${(pollingInterval() * 60000)}"
-                    if ((nowTime - event.time) < (pollingInterval() * 60000)) {
-                        log.debug "Checking event to Alarm ${event.name}, ${event.type}, ${event.time}"
-                        def eventStatus = humanReadableEventStatus(event.type)
-                        if (eventStatus.length() > 0) {
-                            sendEvent(name: "alarm", value: eventStatus)
-                            sendEvent(name: "status", value: eventStatus)
-                            sendEvent(name: 'presence', value: eventStatus)
-                            notifyUser = false
-                        }
+def pollingInterval() {
+    switch(settings.pollInterval) {
+    	case "1 minute" : 
+        	return 1
+        case "5 minutes" :
+        	return 5
+        case "10 minutes" :
+        	return 10
+        case "15 minutes" :
+        	return 15
+     	default:
+            return 5
+    }
+}
 
-                    }
+def refreshDeviceStatus(ringDeviceStatus, pollingInterval) {
+    def keypadCount = 0
+    def rangeExtenderCount = 0
+    def alarmNetworkId = device.deviceNetworkId
+    def childSensors = getChildDevices();
+
+    for (device in ringDeviceStatus) {
+        //log.debug "refreshDeviceStatus() -> Ring Device: Id - ${device.id}, Name - ${device.name}, Type - ${device.type}, Faulted - ${device.faulted}, Mode - ${device.mode}"
+     
+        if (device.type == 'security-panel') {
+            def alarmStatus = humanReadableAlarmStatus(device.mode)
+            log.debug "refreshDeviceStatus() -> Ring Alarm Status: ${device.mode}, ${alarmStatus}"
+            sendEvent(name: "alarm", value: alarmStatus)
+            sendEvent(name: "status", value: alarmStatus)
+            sendEvent(name: 'presence', value: alarmStatus)
+        } 
+
+        switch (device.type) {
+            case 'sensor.contact' :
+            	def contactSensor = childSensors?.find { it.deviceNetworkId == "${alarmNetworkId}-${device.id}" }
+				//log.trace "refreshDeviceStatus() -> Contact Sensor ${contactSensor} found with Id ${alarmNetworkId}-${device.id}, updating status."
+                if(contactSensor) {
+                    if (device.faulted) 
+                        contactSensor.sendEvent(name: "contact", value: "open", isStateChange: true, descriptionText: "${device.name} is Open")
+                    else
+                        contactSensor.sendEvent(name: "contact", value: "closed", isStateChange: true, descriptionText: "${device.name} is Closed")
                 }
-                def eventTime = Calendar.getInstance(location.getTimeZone())
-                eventTime.setTimeInMillis(event.time)
-                logs.append(eventTime.format("MM/dd HH:mm:ss zzz")).append("-").append(event.name).append(" - ").append(event.type).append("\r\n")
+                break
+            case 'sensor.flood-freeze' :
+                def floodFreezeSensor = childSensors?.find { it.deviceNetworkId == "${alarmNetworkId}-${device.id}"}
+				//log.trace "refreshDeviceStatus() -> Flood Freeze Sensor ${floodFreezeSensor} found with Id ${alarmNetworkId}-${device.id}, updating status."
+                if(floodFreezeSensor){
+                	if (device.faulted) 
+                        floodFreezeSensor.sendEvent(name: "water", value: "wet", isStateChange: true, descriptionText: "${device.name} is Wet")
+                    else
+                        floodFreezeSensor.sendEvent(name: "water", value: "dry", isStateChange: true, descriptionText: "${device.name} is Dry")
+                }
+                break
+            case 'range-extender.zwave' :
+            	//No Chile devices Yet for Range Extendar
+                if (device.faulted) 
+                	sendEvent(name: "ringrange${++rangeExtenderCount}", value: "offline", isStateChange: true, descriptionText: "${device.name} is Offline")
+                else
+                    sendEvent(name: "ringrange${++rangeExtenderCount}", value: "online", isStateChange: true, descriptionText: "${device.name} is Online")
+                break
+            case 'security-keypad' :
+            	//No Chile devices Yet for Range Extendar
+                if (device.faulted) 
+                	sendEvent(name: "ringkeypad${++keypadCount}", value: "offline", isStateChange: true, descriptionText: "${device.name} is Offline")
+                else
+                    sendEvent(name: "ringkeypad${++keypadCount}", value: "online", isStateChange: true, descriptionText: "${device.name} is Online")
+                break
+            case 'sensor.motion' :
+            	def motionSensor = childSensors?.find { it.deviceNetworkId == "${alarmNetworkId}-${device.id}"}
+				//log.trace "refreshDeviceStatus() -> Motion Sensor ${floodFreezeSensor} found with Id ${alarmNetworkId}-${device.id}, updating status."
+                if(motionSensor) {
+                    if (device.faulted) 
+                        motionSensor.sendEvent(name: "motion", value: "active", isStateChange: true, descriptionText: "${device.name} - Motion Detected")
+                    else
+                        motionSensor.sendEvent(name: "motion", value: "inactive", isStateChange: true, , descriptionText: "${device.name} - Stopped Detecting Motion")
+                }
+                break   
+            case 'hub.redsky' :
+            	//No Chile devices Yet for Range Extendar
+                if (device.faulted) 
+                	sendEvent(name: "ringbase", value: "offline", isStateChange: true, descriptionText: "${device.name} is Online")
+                else
+                    sendEvent(name: "ringbase", value: "online", isStateChange: true, descriptionText: "${device.name} is Offline")
+                break
+        }
+    }
+}
+
+def updateEventData(ringEvents) {
+    log.trace "updateLogs() -> Processing Logs: ${ringEvents}"
+    
+    def logs = new StringBuilder()
+    def notifyUser = true
+    
+    for (event in ringEvents) {
+        //log.debug "updateLogs -> Ring Event: ${event.name}, ${event.type}, ${event.time}" 
+        
+        if(notifyUser) {
+            def nowTime = new Date().time
+            //log.debug "updateLogs() -> Dates Now ${nowTime}, Event ${event.time}, Polling Interval ${pollingInterval()}"
+            // (current time in milli - event time in milli) > interval * 60000
+            //log.debug "updateLogs() -> Diff ${(nowTime - event.time)}, Time ${(pollingInterval() * 60000)}"
+            if ((nowTime - event.time) < (pollingInterval() * 60000)) {
+                //log.debug "updateLogs() -> Checking event to Alarm ${event.name}, ${event.type}, ${event.time}"
+                def eventStatus = humanReadableEventStatus(event.type)
+                if (eventStatus.length() > 0) {
+                    sendEvent(name: "alarm", value: eventStatus)
+                    sendEvent(name: "status", value: eventStatus)
+                    sendEvent(name: 'presence', value: eventStatus)
+                    notifyUser = false
+                }
+
             }
-            log.debug "Log to Display: ${logs.toString()}"
-            sendEvent(name: "log", value: logs.toString(), displayed: false)
-		}
-	} catch (e) {
-		log.debug "Ring Alarm Status check Error: $e"
-	}
+        }
+        
+        def eventTime = Calendar.getInstance(location.getTimeZone())
+        eventTime.setTimeInMillis(event.time)
+        logs.append(eventTime.format("MM/dd HH:mm:ss zzz")).append("-").append(event.name).append(" - ").append(event.type).append("\r\n")
+    }
+    
+    //log.trace "updateLogs() -> Log to Display: ${logs.toString()}"
+    sendEvent(name: "log", value: logs.toString(), displayed: false)
 }
