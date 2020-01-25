@@ -370,9 +370,9 @@ def refreshDeviceStatus(ringDeviceStatus, pollingInterval) {
 				//log.trace "refreshDeviceStatus() -> Motion Sensor ${floodFreezeSensor} found with Id ${alarmNetworkId}-${device.id}, updating status."
                 if(motionSensor) {
                     if (device.faulted) 
-                        motionSensor.sendEvent(name: "motion", value: "active", isStateChange: true, descriptionText: "${device.name} - Motion Detected")
+                        motionSensor.sendEvent(name: "motion", value: "motion", isStateChange: true, descriptionText: "${device.name} - Motion Detected")
                     else
-                        motionSensor.sendEvent(name: "motion", value: "inactive", isStateChange: true, , descriptionText: "${device.name} - Stopped Detecting Motion")
+                        motionSensor.sendEvent(name: "motion", value: "no motion", isStateChange: true, , descriptionText: "${device.name} - Stopped Detecting Motion")
                 }
                 break   
             case 'hub.redsky' :
