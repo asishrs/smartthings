@@ -175,7 +175,7 @@ def createChildDevices(ringAPIData) {
                 addSensor("Motion", ringDevice.id, ringDevice.name)
                 break   
             case 'sensor.flood-freeze' :
-                addSensor("Flood-freeze", ringDevice.id, ringDevice.name)
+                addSensor("Floodfreeze", ringDevice.id, ringDevice.name)
                 break   
         }
     }
