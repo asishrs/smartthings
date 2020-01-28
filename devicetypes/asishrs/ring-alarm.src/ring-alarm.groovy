@@ -192,7 +192,7 @@ def addSensor(type, id, name) {
     } else {
         log.debug "addSensor() -> Adding sensor with type ${type} and ${deviceId}"
         //DeviceWrapper addChildDevice(String typeName, String deviceNetworkId, hubId, Map properties)
-        return addChildDevice("Ring ${type} Sensor", deviceId, device.hubId,
+        return addChildDevice("Ring Alarm ${type} Sensor", deviceId, device.hubId,
                               [isComponent: false, completedSetup: true, componentName: "${type}-${deviceId}", 
                                componentLabel: "Ring ${name}", label: "Ring ${name}"])
 	}
