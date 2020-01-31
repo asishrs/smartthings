@@ -29,8 +29,8 @@
 
 	tiles() {
 		standardTile("motion", "device.motion", decoration: "flat", width: 2, height: 2) {
-            state("no motion", label: '${name}', icon: "st.motion.motion.inactive", backgroundColor: "#00A0DC")
-       		state("motion", label: '${name}',icon: "st.motion.motion.active", backgroundColor: "#e86d13")
+            state("inactive", label: 'no motion', icon: "st.motion.motion.inactive", backgroundColor: "#00A0DC")
+       		state("active", label: 'motion',icon: "st.motion.motion.active", backgroundColor: "#e86d13")
         }
 	}
 }
