@@ -378,9 +378,9 @@ def refreshDeviceStatus(ringDeviceStatus, pollingInterval) {
             case 'hub.redsky' :
             	//No Chile devices Yet for Range Extendar
                 if (device.faulted) 
-                	sendEvent(name: "ringbase", value: "offline", isStateChange: true, descriptionText: "${device.name} is Online")
+                	sendEvent(name: "ringbase", value: "offline", isStateChange: true, descriptionText: "${device.name} is Offline")
                 else
-                    sendEvent(name: "ringbase", value: "online", isStateChange: true, descriptionText: "${device.name} is Offline")
+                    sendEvent(name: "ringbase", value: "online", isStateChange: true, descriptionText: "${device.name} is Online")
                 break
         }
     }
