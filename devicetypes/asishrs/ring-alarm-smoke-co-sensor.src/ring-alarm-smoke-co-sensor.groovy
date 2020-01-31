@@ -29,8 +29,8 @@
 
 	tiles() {
         standardTile("smokeco", "device.smokeco", decoration: "flat", width: 2, height: 2) {
-        	state("clear", label:'${name}', icon:"https://cdn.shopify.com/s/files/1/2393/8647/products/4SS1S7-0EN0-1_1400x1400.jpg?v=1520879970", backgroundColor:"#00A0DC")
-			state("alarm", label:'${name}', icon:"https://cdn.shopify.com/s/files/1/2393/8647/products/4SS1S7-0EN0-1_1400x1400.jpg?v=1520879970", backgroundColor:"#e86d13")     
+        	state("clear", label:'${name}', icon:"st.alarm.carbon-monoxide.clear", backgroundColor:"#00A0DC")
+			state("alarm", label:'${name}', icon:"st.alarm.carbon-monoxide.carbon-monoxide", backgroundColor:"#e86d13")     
         }
 		main(["smokeco"])
 	}
