@@ -17,6 +17,7 @@ This repository contains device handler and smart-app for Ring Alarm integration
 - Contact Sensor
 - Z-Wave Range Extender 
 - Flood Freeze
+- Smoke/CO Listener
 
 ## Installation
 
