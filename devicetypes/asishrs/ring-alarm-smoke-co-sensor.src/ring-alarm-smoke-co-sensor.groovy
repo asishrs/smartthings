@@ -22,15 +22,30 @@
  *
  */
  metadata {
-	definition (name: "Ring Alarm Motion Sensor", namespace: "asishrs", author: "Asish Soudhamma", cstHandler: true) {
-		capability "Motion Sensor"
+	definition (name: "Ring Alarm Smoke CO Sensor", namespace: "asishrs", author: "Asish Soudhamma", cstHandler: true) {
         capability "Sensor"
+		capability "Refresh"
 	}
 
 	tiles() {
-		standardTile("motion", "device.motion", decoration: "flat", width: 2, height: 2) {
-            state("no motion", label: '${name}', icon: "st.motion.motion.inactive", backgroundColor: "#00A0DC")
-       		state("motion", label: '${name}',icon: "st.motion.motion.active", backgroundColor: "#e86d13")
+        standardTile("smokeco", "device.smokeco", decoration: "flat", width: 2, height: 2) {
+        	state("clear", label:'${name}', icon:"https://cdn.shopify.com/s/files/1/2393/8647/products/4SS1S7-0EN0-1_1400x1400.jpg?v=1520879970", backgroundColor:"#00A0DC")
+			state("alarm", label:'${name}', icon:"https://cdn.shopify.com/s/files/1/2393/8647/products/4SS1S7-0EN0-1_1400x1400.jpg?v=1520879970", backgroundColor:"#e86d13")     
         }
+		main(["smokeco"])
 	}
+}
+
+def refresh() {
+	log.debug("Ring Smoke CO Sensor child refresh - ${device.deviceNetworkId}")
+    parent.childRefresh(device.deviceNetworkId)
+}
+
+def installed () {
+	log.debug("Ring Smoke CO Sensor Installed - parent ${parent}, ${device.deviceNetworkId}")
+}
+
+def uninstalled () {
+	log.debug("Ring Smoke CO Sensor Uninstalled - parent ${parent}, ${device.deviceNetworkId}")
+	//parent.delete()
 }
