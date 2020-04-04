@@ -152,6 +152,43 @@ def ringAccountStatus(){
         getRingAccountDetails()
 
         section ("Account Status") {
+            section {
+                def locationId = state.ringLocationId
+                def zId = state.ringZID
+                def locationNames = state.locations.ketSet()
+                log.trace "ringAccountStatus() -> Locations are : ${locationNames}"
+                if (locationId?.trim() && zId?.trim()) {
+                    log.trace "ringAccountStatus() -> Assigning default values as it is not existing. Default Location : ${locationNames.first()}"
+                    def defaultLocation  = state.locations[locationNames.first()]
+                    log.trace "ringAccountStatus() -> Default location : ${defaultLocation}"
+                    state.ringLocationId = defaultLocation.id
+                    state.ringZID = defaultLocation.zId
+                }
+                //def locations = [ "Location 1 (hhh)", "Location 2 ()"]
+                input(name: "ringLocation", type: "enum", title: "Alarm Location", required: "false", options: locationNames, defaultValue: locationNames[0], submitOnChange: true)
+            }
+
+            if(ringLocation) {
+                // Check if location changed.
+                def selectedLocationName = settings.ringLocation
+                def selectedLocation = state.locations[selectedLocationName]
+                log.trace "ringAccountStatus() -> Selected location name : ${selectedLocationName}, details: ${selectedLocation}"
+                def selectedLocationId = selectedLocation.id
+                def selectedZId = selectedLocation.zId
+                // Save updated location to state.
+                if (!state.ringLocationId.equals(selectedLocationId) || !state.ringZID.equals(selectedZId)) {
+                    log.trace "ringAccountStatus() -> Updating location in state based in user choice : ${selectedLocationName}"
+                    state.ringLocationId = selectedLocationId
+                    state.ringZID = selectedZId
+                    // Removed old devices.
+                    log.trace "ringAccountStatus() -> Removing OLD child devices."
+                    alarmsystem.removeChildDevices()
+                    // Adding new Child devices
+                    log.trace "ringAccountStatus() -> Adding NEW child devices."
+                    addChildDevices
+                }        
+            }
+            // Display data
             def locationId = state.ringLocationId
             def zId = state.ringZID
             if(!state.ringLocationId) {
@@ -161,8 +198,11 @@ def ringAccountStatus(){
                 zId = "Not Available, check back after complete setup"
             }
             String ringAddtionalData = "Location Id - ${locationId}\n\nZID - ${zId}"
-            paragraph ringAddtionalData
+            section {
+                paragraph ringAddtionalData
+            }
         }
+
     }
 }
 
@@ -361,8 +401,17 @@ def getRingAccountDetails() {
 		log.trace("getRingAccountDetails() -> Either LocationId or ZID is not present in the state, making AWS API call to get the values.")
         def apiResponse = ringApiCall("meta")
         if(apiResponse.data) {
-			state.ringLocationId = apiResponse.data.locationId
-			state.ringZID = apiResponse.data.zId
+            state.locations = apiResponse.data
+            def locationsMap = [:]
+
+            def locations = new groovy.json.JsonSlurper().parseText(apiResponse.data)
+            locations.each { 
+                log.trace("getRingAccountDetails() -> Location is : $it")
+                locationsMap($it.name, $it)
+            }
+            state.locations = locationsMap
+			//state.ringLocationId = apiResponse.data.locationId
+			//state.ringZID = apiResponse.data.zId
 		}
     }
 }
