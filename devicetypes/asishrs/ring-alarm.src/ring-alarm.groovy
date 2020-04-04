@@ -37,6 +37,7 @@ metadata {
         command "refreshDeviceStatus"
         command "refreshDevices"
         command "updateEventData"
+        command "removeChildDevices"
 		attribute "events", "string"
 		attribute "messages", "string"
 		attribute "status", "string"
@@ -148,12 +149,13 @@ def deduct(originalChildDevices, addedChildren) {
 }
 
 def uninstalled() {
-	removeChildDevices(getChildDevices())
+	removeChildDevices()
 }
 
-def removeChildDevices(delete) {
-	log.info "removeChildDevices() -> Deleting devices: ${delete}"
-    delete.each {
+def removeChildDevices() {
+    def children = getChildDevices()
+	log.info "removeChildDevices() -> Deleting devices: ${children}"
+    children.each {
     	log.info "removeChildDevices() -> Trying to delete device ${it.deviceNetworkId}"
         try {
         	deleteChildDevice(it.deviceNetworkId)
