@@ -15,7 +15,7 @@
 
 - Pause the SmartThings API integration. Open the _Ring Alarm Manager_ > _AWS API for SmartThings Integration_ > Toggle Button on for _Pause AWS Ring API Integration..._
 - Deploy new Ring AWS Lambda.
-  - Download the **Release v3.30** from https://github.com/asishrs/smartthings-ringalarmv2/releases
+  - Download the deployment.zip from [Release v3.30](https://github.com/asishrs/smartthings-ringalarmv2/releases/tag/v3.3.0)
   - Login to AWS Lambda https://console.aws.amazon.com/lambda/home?region=us-east-1#/functions 
   - Select your lambda for Ring Integration.
   - Confirm the **Code entry type** as _Upload a .zip file_
