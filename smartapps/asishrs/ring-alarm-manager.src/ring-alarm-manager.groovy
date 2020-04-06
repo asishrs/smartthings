@@ -93,7 +93,7 @@ def pageStart(){
             paragraph title: "About", 
             image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_about_2508117.png",
             "Ring Alarm Manager connects Ring Account to the SmartThings platform. Read more about at https://github.com/asishrs/smartthings-ringalarmv2"
-        	paragraph "Version 3.2.1\n\nRelease Notes:\n- Support for Ring refresh token authentication.\n- Ability to reset Ring Token.\n- Ability to view Location details.\n- Ability to view Tokens.\n- UI Enhancements."
+        	paragraph "Version 3.3.0\n\nRelease Notes:\n- Support for Ring refresh token authentication.\n- Ability to reset Ring Token.\n- Ability to view Location details.\n- Ability to view Tokens.\n- UI Enhancements."
         }
     }
 }
@@ -183,7 +183,7 @@ def ringAccountStatus(){
         log.trace "ringAccountStatus() -> Gettting Ring Meta Data"
         getRingAccountDetails()
 
-        section ("Account Status") {
+        section () {
             if(!state.ringLocationId) {
             	 paragraph title: "Ring Location", 
                     image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_museumlocation_3243886.png",
