@@ -4,6 +4,8 @@
 
 This repository contains device handler and smart-app for Ring Alarm integration with SmartThings. In order to use this, you need to deploy the API part as described [here](https://github.com/asishrs/smartthings-ringalarmv2 ).
 
+:warning: [April 5 2020] Due to the recent changes in the Ring 2FA changes, this application was updated to support the 2FA use cases. Unfortunately, this means the support for the accounts without 2FA is no more actively supported. Please update your Ring Account with 2FA support to use this.
+
 ## Prerequisites 
 [Ring Alarm API](https://github.com/asishrs/smartthings-ringalarmv2 ) 
 
@@ -133,6 +135,10 @@ This is based on *SmartThing Classic App*.
 
     1. SmartThings Notifications
         1. You can choose the notification options as well as a custom name on this.  
+
+## Update to latest version
+
+Read the [release notes](RELEASE.md)
 
 ## Support
 
