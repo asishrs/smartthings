@@ -23,3 +23,4 @@
   - Click on **Save** 
 - Update Ring Alarm SmartThings Device Handler. Follow instruction at https://github.com/asishrs/smartthings#installing-device-handlers
 - Update Ring Alarm SmartThings App. Follow instruction at https://github.com/asishrs/smartthings#installing-smartapps
+- Delete the Ring Alarm SmartThings App and reinstall it. 
