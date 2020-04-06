@@ -93,7 +93,7 @@ def pageStart(){
             paragraph title: "About", 
             image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_about_2508117.png",
             "Ring Alarm Manager connects Ring Account to the SmartThings platform. Read more about at https://github.com/asishrs/smartthings-ringalarmv2"
-        	paragraph "Version 3.3.0\n\nRelease Notes:\n- Support for Ring refresh token authentication.\n- Ability to reset Ring Token.\n- Ability to view Location details.\n- Ability to view Tokens.\n- UI Enhancements."
+        	paragraph "Version 3.3.1\n\nRelease Notes:\n- Support for Ring refresh token authentication.\n- Ability to reset Ring Token.\n- Ability to view Location details.\n- Ability to view Tokens.\n- UI Enhancements.\nRemoved support Ring Accounts without 2FA.\nRemoved logs display in ST Device Handler."
         }
     }
 }
@@ -115,7 +115,7 @@ def alarmMonitoringDescription(){
 }
 
 def ringAPISettingsDescription(){
-	if((twoFactorEnabled && state.ringRefreshKey) || (!twoFactorEnabled && (username && password)))
+	if(state.ringRefreshKey)
     	return "Tap to view details"
     else 
     	return "Tap to Configure"	
@@ -131,22 +131,23 @@ def notificationsDescription(){
 def ringApiSettings(){
 	dynamicPage(name: "ringApiSettings", title: "Ring API Configuration", install: false, uninstall: true){
        
-        section ("Two Factor Authentication") {
-            input(name: "twoFactorEnabled", type: "bool", title: "", required: "true", description: "Have you enabled Two Factor Authentication (2FA) in your Ring Account?", submitOnChange: true)
-        }
+       section(){
+            href(name: "href2faRequired",
+             title: "Ring 2FA Required",
+             required: false,
+             style: "external",
+             url: "https://support.ring.com/hc/en-us/articles/360024818291-Using-Two-Step-Security-Authentication-with-Your-Ring-Products",
+             image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_Warning_2978627.png",
+             description: "Ring Two Factor Authentication (2FA) is required for this app to work. If you haven't enabled 2FA on your account yet, tap to view the instructions.")
+       }
         
         section ("Ring Account Access"){
-            if(twoFactorEnabled) {
-                input(name: "username", type: "text", title: "Username", required: "true", description: "Ring Alarm Username (Email Address)")
-                input(name: "password", type: "password", title: "Password", required: "true", description: "Ring Alarm Password")
-            } else {
-                input(name: "username", type: "text", title: "Username", required: "true", description: "Ring Alarm Username (Email Address)")
-                input(name: "password", type: "password", title: "Password", required: "true", description: "Ring Alarm Password")
-            }
+            input(name: "username", type: "text", title: "Username", required: "true", description: "Ring Alarm Username (Email Address)")
+            input(name: "password", type: "password", title: "Password", required: "true", description: "Ring Alarm Password")
         }
         
         section("Two Factor Authentication"){
-        	if(twoFactorEnabled && !state.ringRefreshKey) {
+        	if(!state.ringRefreshKey) {
         		href "finishRingAccount2FA", title: ringAccountStatusTitle(), description: ringAccountStatusDescription()
             } else {
             	href "ringAccountStatus", title: "Ring Account Status", description: "Tap to view Ring Account Status"
@@ -157,7 +158,7 @@ def ringApiSettings(){
 
 def finishRingAccount2FA(){
 	dynamicPage(name: "finishRingAccount2FA", title: "Finish Ring API 2FA Setup", install: false, uninstall: true){
-        if(twoFactorEnabled && !state.ringRefreshKey) {
+        if(!state.ringRefreshKey) {
        		ringRequest2FAToken()
             section ("Finish the 2FA Authentication") {
                 input(name: "twoFactorCode", type: "text", title: "2FA Code", required: "true", description: "OTP received in Registered Cell Phone Number from Ring.")
@@ -172,7 +173,7 @@ def finishRingAccount2FA(){
 def ringAccountStatus(){
 	dynamicPage(name: "ringAccountStatus", title: "Ring Account Status", install: false, uninstall: true){
     	//Ring 2FA Enabled and Bring Your Own Key option is not enabled but the Refresh Key is not present
-        if(twoFactorEnabled && !state.ringRefreshKey) {
+        if(!state.ringRefreshKey) {
             def apiResponse = ringSubmit2FAToken()
              if(apiResponse.data) {
              	log.trace "ringAccountStatus() -> Storing refresh data to scope"
@@ -230,20 +231,16 @@ def ringAccountStatus(){
 def ringAccountStatusTitle(){
 	if(state.ringRefreshKey) {
     	return "Account Status"
-    } else if(twoFactorEnabled) {
-        return "Finish 2FA Setup"
     } else {
-    	return "Account Status"
+    	return "Finish 2FA Setup"
     }
 }
 
 def ringAccountStatusDescription(){
 	if(state.ringRefreshKey) {
     	return "Tap to view Account Status"
-    } else if(twoFactorEnabled) {
-        return "Tap to view Finish 2FA Setup"
     } else {
-    	return "Tap to view Account Status"
+    	return "Tap to view Finish 2FA Setup"
     }
 }
 
