@@ -42,19 +42,58 @@ preferences {
 def pageStart(){
 	dynamicPage(name: "pageStart", title: "Ring Alarm SmartThings", install: true, uninstall: true) {
     	section() {
-        	href "awsAPISettings", title:"AWS API for SmartThings Integration", description: awsAPISettingsDescription()
+        	href "awsAPISettings", 
+            title:"AWS API Integration", 
+            description: awsAPISettingsDescription(),
+            image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_WebAPI_921042.png"
         }
         
         section(){
-        	href "ringApiSettings", title:"Ring Account", description: ringAPISettingsDescription()
+        	href "ringApiSettings", 
+            title:"Ring Account", 
+            description: ringAPISettingsDescription(),
+            image: "https://terms-612db.firebaseapp.com/ringalarm/images/ringalarm.png"
         }
         
         section() {
-        	href "alarmMonitoring", title:"SmartThings Alarm Device", description: alarmMonitoringDescription()
+        	href "alarmMonitoring", 
+            title:"Alarm Device", 
+            description: alarmMonitoringDescription(),
+            image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_homesecurity.png"
         }
         
         section() {
-        	href "notifications", title:"SmartThings Notifications", description: notificationsDescription()
+        	href "notifications", 
+            title:"Notifications", 
+            description: notificationsDescription(),
+            image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_Alarm_2091358.png"
+        }
+        
+        section() {
+            paragraph title: "CAUTION: Reset Ring Tokens", 
+            	image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_Warning_32380.png",
+            	"Once you select the value as Yes, existing tokens will be removed, and you need to set 2FA for your Ring Account.\n\nIMPORTANT: Select the option No before you proceed to avoid accidental token deletion.\n\nThis action is irreversible."
+            def resetOptions = [ "No", "Yes"]
+            input(name: "resetTokens", type: "enum", title: "Reset", required: "false", options: resetOptions, defaultValue: resetOptions[0], submitOnChange: true)
+        }
+
+        if(resetTokens) {
+         	def selection = settings.resetTokens
+            log.trace "ringApiSettings() -> User selection for Reset Tokens - ${selection}"
+            if(selection == "Yes") {
+            	log.trace "ringApiSettings() -> Removing Tokens"
+                state.remove('ringRefreshKey')
+                state.remove('ringAccessKey')
+                state.remove('ringZID')
+                state.remove('ringLocationId')
+            }
+        }
+        
+        section() {
+            paragraph title: "About", 
+            image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_about_2508117.png",
+            "Ring Alarm Manager connects Ring Account to the SmartThings platform. Read more about at https://github.com/asishrs/smartthings-ringalarmv2"
+        	paragraph "Version 3.2.1\n\nRelease Notes:\n- Support for Ring refresh token authentication.\n- Ability to reset Ring Token.\n- Ability to view Location details.\n- Ability to view Tokens.\n- UI Enhancements."
         }
     }
 }
@@ -76,7 +115,7 @@ def alarmMonitoringDescription(){
 }
 
 def ringAPISettingsDescription(){
-	if((twoFactorEnabled && refreshToken) || (!twoFactorEnabled && (username && password)))
+	if((twoFactorEnabled && state.ringRefreshKey) || (!twoFactorEnabled && (username && password)))
     	return "Tap to view details"
     else 
     	return "Tap to Configure"	
@@ -98,13 +137,8 @@ def ringApiSettings(){
         
         section ("Ring Account Access"){
             if(twoFactorEnabled) {
-            	input(name: "bringYourRefreshKey", type: "bool", title: "", required: "true", description: "Do you want to use an existing Ring Account Refresh Key?", submitOnChange: true)
-                if(bringYourRefreshKey) {
-                	input(name: "refreshToken", type: "paragraph", title: "2FA Refresh Token from command-line appication", required: "true", description: "Ring Alarm Refresh Token from command line application.")
-                } else {
-                    input(name: "username", type: "text", title: "Username", required: "true", description: "Ring Alarm Username (Email Address)")
-                    input(name: "password", type: "password", title: "Password", required: "true", description: "Ring Alarm Password")
-                }
+                input(name: "username", type: "text", title: "Username", required: "true", description: "Ring Alarm Username (Email Address)")
+                input(name: "password", type: "password", title: "Password", required: "true", description: "Ring Alarm Password")
             } else {
                 input(name: "username", type: "text", title: "Username", required: "true", description: "Ring Alarm Username (Email Address)")
                 input(name: "password", type: "password", title: "Password", required: "true", description: "Ring Alarm Password")
@@ -112,7 +146,7 @@ def ringApiSettings(){
         }
         
         section("Two Factor Authentication"){
-        	if(twoFactorEnabled && !bringYourRefreshKey && !state.ringRefreshKey) {
+        	if(twoFactorEnabled && !state.ringRefreshKey) {
         		href "finishRingAccount2FA", title: ringAccountStatusTitle(), description: ringAccountStatusDescription()
             } else {
             	href "ringAccountStatus", title: "Ring Account Status", description: "Tap to view Ring Account Status"
@@ -123,10 +157,10 @@ def ringApiSettings(){
 
 def finishRingAccount2FA(){
 	dynamicPage(name: "finishRingAccount2FA", title: "Finish Ring API 2FA Setup", install: false, uninstall: true){
-        if(twoFactorEnabled && !bringYourRefreshKey && !state.ringRefreshKey) {
-       		ringGet2FAToken()
+        if(twoFactorEnabled && !state.ringRefreshKey) {
+       		ringRequest2FAToken()
             section ("Finish the 2FA Authentication") {
-                input(name: "twoFactorCode", type: "text", title: "2FA Code)", required: "true", description: "OTP received in Registered Cell Phone Number from Ring.")
+                input(name: "twoFactorCode", type: "text", title: "2FA Code", required: "true", description: "OTP received in Registered Cell Phone Number from Ring.")
             }
             section("Account Status"){
             	href "ringAccountStatus", title: "Ring Account Status", description: "Tap to view Ring Account Status"
@@ -138,30 +172,57 @@ def finishRingAccount2FA(){
 def ringAccountStatus(){
 	dynamicPage(name: "ringAccountStatus", title: "Ring Account Status", install: false, uninstall: true){
     	//Ring 2FA Enabled and Bring Your Own Key option is not enabled but the Refresh Key is not present
-        if(twoFactorEnabled && !bringYourRefreshKey && !state.ringRefreshKey) {
+        if(twoFactorEnabled && !state.ringRefreshKey) {
             def apiResponse = ringSubmit2FAToken()
              if(apiResponse.data) {
              	log.trace "ringAccountStatus() -> Storing refresh data to scope"
                 state.ringRefreshKey = apiResponse.data.refresh_token
+                state.ringKeyRefreshTime = getTimeNow()
              }
-        } else if(twoFactorEnabled && bringYourRefreshKey){
-        	log.trace "ringAccountStatus() -> Storing refresh data to scope"
-            state.ringRefreshKey = settings.refreshToken
-        }
+        } 
         log.trace "ringAccountStatus() -> Gettting Ring Meta Data"
         getRingAccountDetails()
 
         section ("Account Status") {
-            def locationId = state.ringLocationId
-            def zId = state.ringZID
             if(!state.ringLocationId) {
-                locationId = "Not Available, check back after complete setup"
+            	 paragraph title: "Ring Location", 
+                    image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_museumlocation_3243886.png",
+                	"Not Available, check back after complete setup"
+            } else {
+                paragraph title: "Ring Location", 
+                    image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_museumlocation_3243886.png",
+                    "Name: ${state.ringLocation.name}\n${state.ringLocation.address.street}\n${state.ringLocation.address.city},${state.ringLocation.address.state}\n${state.ringLocation.address.zipcode}\n\n${state.ringMetaRefreshTime}"
             }
+            
             if(!state.ringZID) {
-                zId = "Not Available, check back after complete setup"
+            	 paragraph title: "Ring ZID", 
+                 	image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_homesecurity.png",
+                	"Not Available, check back after complete setup"
+            } else {
+            	 paragraph title: "Ring ZID", 
+                    image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_homesecurity.png",
+                    "${state.ringZID}\n\n${state.ringMetaRefreshTime}"
             }
-            String ringAddtionalData = "Location Id - ${locationId}\n\nZID - ${zId}"
-            paragraph ringAddtionalData
+            
+            if(!state.ringRefreshKey) {
+            	 paragraph title: "Ring Refresh Token", 
+                 	image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_keyrefresh_2564457.png",
+                	"Not Available, check back after complete setup"
+            } else {
+            	 paragraph title: "Ring Refresh Token", 
+                    image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_keyrefresh_2564457.png",
+                    "${state.ringRefreshKey}\n\n${state.ringKeyRefreshTime}"
+            }
+            
+            if(!state.ringAccessKey) {
+            	 paragraph title: "Ring Access Token", 
+                 	image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_Key_724568.png",
+                	"Not Available, check back after complete setup"
+            } else {
+            	 paragraph title: "Ring Access Token", 
+                    image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_Key_724568.png",
+                    "${state.ringAccessKey}\n\n${state.ringKeyRefreshTime}"
+            }
         }
     }
 }
@@ -170,11 +231,7 @@ def ringAccountStatusTitle(){
 	if(state.ringRefreshKey) {
     	return "Account Status"
     } else if(twoFactorEnabled) {
-		if(bringYourRefreshKey) {
-        	return "Account Status"
-        } else {
-        	return "Finish 2FA Setup"
-        }
+        return "Finish 2FA Setup"
     } else {
     	return "Account Status"
     }
@@ -184,11 +241,7 @@ def ringAccountStatusDescription(){
 	if(state.ringRefreshKey) {
     	return "Tap to view Account Status"
     } else if(twoFactorEnabled) {
-		if(bringYourRefreshKey) {
-        	return "Tap to view Account Status"
-        } else {
-        	return "Tap to view Finish 2FA Setup"
-        }
+        return "Tap to view Finish 2FA Setup"
     } else {
     	return "Tap to view Account Status"
     }
@@ -255,6 +308,7 @@ def updated() {
   
 def init() {
 	log.info "init() -> initializing"
+    state.preventRougeAuthRequest = false
 	subscribe(app, onAppTouchHandler)
     log.trace("init() -> subscribe(app, onAppTouch)")
     //subscribe(location, "alarmSystemStatus", shmHandler)
@@ -361,8 +415,10 @@ def getRingAccountDetails() {
 		log.trace("getRingAccountDetails() -> Either LocationId or ZID is not present in the state, making AWS API call to get the values.")
         def apiResponse = ringApiCall("meta")
         if(apiResponse.data) {
-			state.ringLocationId = apiResponse.data.locationId
+        	state.ringLocation = apiResponse.data.location
+			state.ringLocationId = apiResponse.data.location.id
 			state.ringZID = apiResponse.data.zId
+            state.ringMetaRefreshTime = getTimeNow()
 		}
     }
 }
@@ -420,7 +476,7 @@ def readyToMakeAPICall(route){
         return false
     }
     
-    if (route && route != "meta" && !alarmsystem) {
+    if (route && route != "meta" && !alarmsystem && state.preventRougeAuthRequest) {
     	log.error "readyToMakeAPICall() -> No Alarm System Configured, Setup your alarm system using the `Alarm Monitoring` section"
         return false
     }
@@ -435,10 +491,15 @@ def readyToMakeAPICall(route){
 
 def addChildDevices() {
     def apiResponse = ringApiCall("status")
-    if(apiResponse.data) {
-        log.info "addChildDevices() -> Creating/Updating Devices"
-        alarmsystem.createChildDevices(apiResponse.data)
+    try{
+        if(apiResponse.data) {
+            log.info "addChildDevices() -> Creating/Updating Devices"
+            alarmsystem.createChildDevices(apiResponse.data)
+        }
+    } catch (e) {
+        log.error "addChildDevices() -> Unable to complete addChildDevices : $e"
     }
+    
 }
 
 def scheduleDeviceRefresh() {
@@ -462,18 +523,42 @@ def scheduleDeviceRefresh() {
     }
 }
 
-def updateChildDeviceStatus() {
-	log.debug "updateChildDeviceStatus() -> Updating Child Device Status"
-    def apiResponse = ringApiCall("status")
-    if(apiResponse.data && settings.pollInterval) {
-        alarmsystem.refreshDeviceStatus(apiResponse.data.deviceStatus, settings.pollInterval)
-        alarmsystem.updateEventData(apiResponse.data.events)
+def pollingInterval() {
+    switch(settings.pollInterval) {
+    	case "1 minute" : 
+        	return 1
+        case "5 minutes" :
+        	return 5
+        case "10 minutes" :
+        	return 10
+        case "15 minutes" :
+        	return 15
+     	default:
+            return 5
     }
 }
 
-def ringGet2FAToken(){
+def getTimeNow() {
+    def now = new Date()
+    return now.format("MM/dd/yyyy HH:mm:ss zzz")
+}
+
+def updateChildDeviceStatus() {
+	log.debug "updateChildDeviceStatus() -> Updating Child Device Status"
+    def apiResponse = ringApiCall("status")
+    try{
+        if(apiResponse.data && settings.pollInterval) {
+            alarmsystem.refreshDeviceStatus(apiResponse.data.deviceStatus)
+            alarmsystem.updateEventData(apiResponse.data.events, pollingInterval())
+        }
+    } catch (e) {
+        log.error "updateChildDeviceStatus() -> Unable to complete refreshDeviceStatus : $e"
+    }
+}
+
+def ringRequest2FAToken(){
 	if (!settings.username || !settings.password) {
-    	log.info "ringGet2FAToken() -> Preferences not for Ring Account Email and/or Password."
+    	log.info "ringRequest2FAToken() -> Preferences not for Ring Account Email and/or Password."
         return null
     }
     
@@ -489,11 +574,11 @@ def ringGet2FAToken(){
     ]
     try {
         httpPostJson(params) { apiResponse ->
-            log.trace "ringGet2FAToken() -> Ring Alarm `https://oauth.ring.com/oauth/token` response data: ${apiResponse.data}"
+            log.trace "ringRequest2FAToken() -> Ring Alarm `https://oauth.ring.com/oauth/token` response data: ${apiResponse.data}"
             return apiResponse
         }
     } catch (e) {
-        log.error "ringGet2FAToken() -> Unable to complete the Ring API Call: $e"
+        log.error "ringRequest2FAToken() -> Unable to complete the Ring API Call: $e"
         return null
     }
 }
@@ -530,7 +615,53 @@ def ringSubmit2FAToken(route){
     }
 }
 
+def ringGetAccessAndRefreshToken(){
+	if (!settings.username || !settings.password || !settings.twoFactorCode) {
+    	log.info "ringGetAccessAndRefreshToken() -> Preferences not for Ring Account Email, Password or 2FACode."
+        return null
+    }
+	
+    def params = [
+        uri: "https://oauth.ring.com/oauth/token",
+        headers: [
+            'Content-Type':"application/json",
+        ],
+        body: [
+            client_id: "ring_official_ios",
+            grant_type: "refresh_token",
+            refresh_token: state.ringRefreshKey
+        ]
+    ]
+    try {
+        httpPostJson(params) { apiResponse ->
+            if(apiResponse.data.error) {
+                log.trace "ringGetAccessAndRefreshToken() -> Request for Access Token failed. Error [ ${apiResponse.data.error}, ${apiResponse.data.error_description}]"
+                // sendPush("Ring Access Token API call failed.  Error [${apiResponse.data.error}, ${apiResponse.data.error_description}]")
+                return null
+            } else {
+                log.trace "ringGetAccessAndRefreshToken() -> Request for Access Token Successful."
+                state.ringRefreshKey = apiResponse.data.refresh_token
+                state.ringAccessKey = apiResponse.data.access_token
+                state.ringKeyRefreshTime = getTimeNow()
+                return apiResponse.data.access_token
+            }
+        }
+    } catch (e) {
+        log.error "ringGetAccessAndRefreshToken() -> Unable to complete Ring API Call: $e"
+        // sendPush("Ring Access Token API call failed with Response - ${e}")
+        return null
+    }
+}
+
 def ringApiCall(route){
+    // Get Access and Refresh Key
+    def accessKey = ringGetAccessAndRefreshToken()
+
+    if(!accessKey?.trim()) {
+        log.error "ringApiCall() -> Access Token is Null/Empty. Aboritng api call for route `${route}`"
+        return null
+    }
+
 	def apiReady = readyToMakeAPICall()
 	log.info "ringApiCall() -> Calling AWS API for Ring Alarm with route `${route}`. API Call ready - ${apiReady}" 
     if(!apiReady) {
@@ -545,6 +676,7 @@ def ringApiCall(route){
             user: settings.username,
             password: settings.password,
             refreshToken: state.ringRefreshKey,
+            accessToken: accessKey,
             locationId: state.ringLocationId,
             zid: state.ringZID,
             historyLimit: 10
@@ -557,6 +689,7 @@ def ringApiCall(route){
         }
     } catch (e) {
         log.error "ringApiCall() -> Unable to complete the SmartThings Ring AWS API Call: $e"
+        state.preventRougeAuthRequest = true
         return null
     }
 }

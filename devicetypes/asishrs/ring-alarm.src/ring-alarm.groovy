@@ -48,10 +48,10 @@ metadata {
 	tiles(scale: 2) {
         multiAttributeTile(name:"status", type: "generic", width: 6, height: 4) {
             tileAttribute ("device.status", key: "PRIMARY_CONTROL") {
-                attributeState "off", label:'${name}', icon: "st.security.alarm.off", backgroundColor: "#1998d5"
+                attributeState "off", label:'disarmed', icon: "st.security.alarm.off", backgroundColor: "#1998d5"
                 attributeState "home", label:'${name}', icon: "st.Home.home4", backgroundColor: "#e58435"
                 attributeState "away", label:'${name}', icon: "st.security.alarm.on", backgroundColor: "#e53935"
-                attributeState "pending off", label:'${name}', icon: "st.security.alarm.off", backgroundColor: "#ffffff"
+                attributeState "pending off", label:'pending disarmed', icon: "st.security.alarm.off", backgroundColor: "#ffffff"
                 attributeState "pending away", label:'${name}', icon: "st.Home.home4", backgroundColor: "#ffffff"
                 attributeState "pending home", label:'${name}', icon: "st.security.alarm.on", backgroundColor: "#ffffff"
                 attributeState "away_count", label:'countdown', icon: "st.security.alarm.on", backgroundColor: "#ffffff"
@@ -62,9 +62,9 @@ metadata {
         }	
 
         standardTile("off", "device.alarm", width: 2, height: 2, canChangeIcon: false, inactiveLabel: true, canChangeBackground: false) {
-            state ("off", label:"off", action:"triggeroff", icon: "st.security.alarm.off", backgrosundColor: "#008CC1", nextState: "pending")
-            state ("away", label:"off", action:"triggeroff", icon: "st.security.alarm.off", backgroundColor: "#505050", nextState: "pending")
-            state ("home", label:"off", action:"triggeroff", icon: "st.security.alarm.off", backgroundColor: "#505050", nextState: "pending")
+            state ("off", label:"disarmed", action:"triggeroff", icon: "st.security.alarm.off", backgrosundColor: "#008CC1", nextState: "pending")
+            state ("away", label:"disarmed", action:"triggeroff", icon: "st.security.alarm.off", backgroundColor: "#505050", nextState: "pending")
+            state ("home", label:"disarmed", action:"triggeroff", icon: "st.security.alarm.off", backgroundColor: "#505050", nextState: "pending")
             state ("pending", label:"pending", icon: "st.security.alarm.off", backgroundColor: "#ffffff")
         }
         
@@ -301,22 +301,7 @@ public updatePref(val) {
 	log.info "Ring Event Shared value ${val}"
 }
 
-def pollingInterval() {
-    switch(settings.pollInterval) {
-    	case "1 minute" : 
-        	return 1
-        case "5 minutes" :
-        	return 5
-        case "10 minutes" :
-        	return 10
-        case "15 minutes" :
-        	return 15
-     	default:
-            return 5
-    }
-}
-
-def refreshDeviceStatus(ringDeviceStatus, pollingInterval) {
+def refreshDeviceStatus(ringDeviceStatus) {
     def keypadCount = 0
     def rangeExtenderCount = 0
     def alarmNetworkId = device.deviceNetworkId
@@ -399,7 +384,7 @@ def refreshDeviceStatus(ringDeviceStatus, pollingInterval) {
     }
 }
 
-def updateEventData(ringEvents) {
+def updateEventData(ringEvents, pollingInterval) {
     log.trace "updateLogs() -> Processing Logs: ${ringEvents}"
     
     def logs = new StringBuilder()
@@ -410,10 +395,10 @@ def updateEventData(ringEvents) {
         
         if(notifyUser) {
             def nowTime = new Date().time
-            //log.debug "updateLogs() -> Dates Now ${nowTime}, Event ${event.time}, Polling Interval ${pollingInterval()}"
+            //log.debug "updateLogs() -> Dates Now ${nowTime}, Event ${event.time}, Polling Interval ${pollingInterval}"
             // (current time in milli - event time in milli) > interval * 60000
-            //log.debug "updateLogs() -> Diff ${(nowTime - event.time)}, Time ${(pollingInterval() * 60000)}"
-            if ((nowTime - event.time) < (pollingInterval() * 60000)) {
+            //log.debug "updateLogs() -> Diff ${(nowTime - event.time)}, Time ${(pollingInterval * 60000)}"
+            if ((nowTime - event.time) < (pollingInterval * 60000)) {
                 //log.debug "updateLogs() -> Checking event to Alarm ${event.name}, ${event.type}, ${event.time}"
                 def eventStatus = humanReadableEventStatus(event.type)
                 if (eventStatus.length() > 0) {
