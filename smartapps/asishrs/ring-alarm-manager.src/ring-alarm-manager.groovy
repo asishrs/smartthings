@@ -93,7 +93,7 @@ def pageStart(){
             paragraph title: "About", 
             image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_about_2508117.png",
             "Ring Alarm Manager connects Ring Account to the SmartThings platform. Read more about at https://github.com/asishrs/smartthings-ringalarmv2"
-        	paragraph "Version 3.3.1\n\nRelease Notes:\n- Support for Ring refresh token authentication.\n- Ability to reset Ring Token.\n- Ability to view Location details.\n- Ability to view Tokens.\n- UI Enhancements.\nRemoved support Ring Accounts without 2FA.\nRemoved logs display in ST Device Handler."
+        	paragraph "Version 3.3.1\n\nRelease Notes:\n- Support for Ring refresh token authentication.\n- Ability to reset Ring Token.\n- Ability to view Location details.\n- Ability to view Tokens.\n- UI Enhancements.\n- Removed support Ring Accounts without 2FA.\n- Removed logs display in ST Device Handler."
         }
     }
 }
@@ -141,7 +141,7 @@ def ringApiSettings(){
              description: "Ring Two Factor Authentication (2FA) is required for this app to work. If you haven't enabled 2FA on your account yet, tap to view the instructions.")
        }
         
-        section ("Ring Account Access"){
+        section ("Ring Account"){
             input(name: "username", type: "text", title: "Username", required: "true", description: "Ring Alarm Username (Email Address)")
             input(name: "password", type: "password", title: "Password", required: "true", description: "Ring Alarm Password")
         }
