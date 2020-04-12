@@ -1,6 +1,26 @@
 # Ring Alarm Release
 
-## Release v 3.3.0
+## Release v3.4.0
+
+### Features/Fixes
+
+- Changed the Ring Token Refresh UI.
+- Ability to print Device Logs in SmartThings and AWS lambda logs.
+- Advanced Settings section for Token Refresh and Device Logs.
+
+### Installation
+
+- Deploy new Ring AWS Lambda.
+  - Download the deployment.zip from [Release v3.4.0](https://github.com/asishrs/smartthings-ringalarmv2/releases/tag/v3.3.0)
+  - Login to AWS Lambda https://console.aws.amazon.com/lambda/home?region=us-east-1#/functions 
+  - Select your lambda for Ring Integration.
+  - Confirm the **Code entry type** as _Upload a .zip file_
+  - Click on **Upload** button, choose the _deployment.zip_ file downloaded before.
+  - Click on **Save** 
+- Update Ring Alarm SmartThings App. Follow instruction at https://github.com/asishrs/smartthings#installing-smartapps
+- Open the Ring Alarm SmartThings App and check the changes
+
+## Release v3.3.0
 
 ### Features/Fixes
 

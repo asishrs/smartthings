@@ -37,6 +37,9 @@ preferences {
     page(name: "awsAPISettings") 
     page(name: "alarmMonitoring")            
     page(name: "notifications")
+    page(name: "advancedSettings")
+    page(name: "debugLogs")
+    page(name: "removeTokens")
 }
 
 def pageStart(){
@@ -70,30 +73,23 @@ def pageStart(){
         }
         
         section() {
-            paragraph title: "CAUTION: Reset Ring Tokens", 
-            	image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_Warning_32380.png",
-            	"Once you select the value as Yes, existing tokens will be removed, and you need to set 2FA for your Ring Account.\n\nIMPORTANT: Select the option No before you proceed to avoid accidental token deletion.\n\nThis action is irreversible."
-            def resetOptions = [ "No", "Yes"]
-            input(name: "resetTokens", type: "enum", title: "Reset", required: "false", options: resetOptions, defaultValue: resetOptions[0], submitOnChange: true)
-        }
-
-        if(resetTokens) {
-         	def selection = settings.resetTokens
-            log.trace "ringApiSettings() -> User selection for Reset Tokens - ${selection}"
-            if(selection == "Yes") {
-            	log.trace "ringApiSettings() -> Removing Tokens"
-                state.remove('ringRefreshKey')
-                state.remove('ringAccessKey')
-                state.remove('ringZID')
-                state.remove('ringLocationId')
-            }
+        	href "advancedSettings", 
+            title:"Advanced Settings", 
+            description: advancedSettingsDescription(),
+            image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_Settings_1713433.png"
         }
         
         section() {
             paragraph title: "About", 
             image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_about_2508117.png",
             "Ring Alarm Manager connects Ring Account to the SmartThings platform. Read more about at https://github.com/asishrs/smartthings-ringalarmv2"
-        	paragraph "Version 3.3.1\n\nRelease Notes:\n- Support for Ring refresh token authentication.\n- Ability to reset Ring Token.\n- Ability to view Location details.\n- Ability to view Tokens.\n- UI Enhancements.\n- Removed support Ring Accounts without 2FA.\n- Removed logs display in ST Device Handler."
+        	paragraph "Version 3.4.0\n\nRelease Notes:\n- Changed the Ring Token Refresh UI.\n- Ability to print Device Logs in SmartThings and AWS lambda logs.\n- Advanced Settings section for Token Refresh and Device Logs."
+            href(name: "oldReleaseNotes",
+                 required: false,
+                 title: "Previous Release Notes",
+                 style: "external",
+                 url: "https://github.com/asishrs/smartthings/blob/master/RELEASE.md#ring-alarm-release",
+                 description: "Tap to view previous release notes.")
         }
     }
 }
@@ -126,6 +122,89 @@ def notificationsDescription(){
     	return "Tap to view details"
     else 
     	return "Tap to Configure"	
+}
+
+def advancedSettingsDescription(){
+	if(state.ringRefreshKey)
+    	return "Tap to view the Advanced Settings"
+    else 
+    	return "Complete the Ring Account Setup to Enable this."	
+}
+
+def refreshTokenDescription(){
+	if(state.ringRefreshKey)
+    	return "Tap to remove Ring Tokens.\nThis will force you to perfrom Ring Account set up.\n\nThis action is irreversible."
+    else 
+    	return "Complete the Ring Account Setup to Enable this."	
+}
+
+
+def debugLogsDescription(){
+	if(state.ringRefreshKey)
+    	return "Tap to print Raw Devices logs in AWS CloudWatch Logs."
+    else 
+    	return "Complete the Ring Account Setup to Enable this."	
+}
+
+def advancedSettings(){
+    dynamicPage(name: "advancedSettings", title: "Advanced Settings", install: false, uninstall: false){
+    	section() {
+        	href "removeTokens", 
+            title:"Remove Ring Tokens", 
+            description: refreshTokenDescription(),
+            image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_Warning_32380.png"
+        }
+       
+        section() {
+        	href "debugLogs", 
+            title:"Debug Logs", 
+            description: debugLogsDescription(),
+            image: "https://terms-612db.firebaseapp.com/ringalarm/images/noun_log_903479.png"
+        }
+    }
+}
+
+def removeTokens(){
+    dynamicPage(name: "removeTokens", title: "Remove Ring Tokens", install: false, uninstall: false){
+    	section(){
+        	if(!state.ringRefreshKey) {
+				paragraph "Looks like the Ring Setup is not complete yet. Finish the setup and comeback." 
+            } else {
+                log.trace "removeTokens() -> Removing Tokens"
+                state.remove('ringRefreshKey')
+                state.remove('ringAccessKey')
+                state.remove('ringZID')
+                state.remove('ringLocationId')
+                paragraph "Tokens are cleared. You need to provice Ring Account login deatils again for the SmartThings application to autheticate." 
+            }
+        }
+    }
+}
+
+def debugLogs(){
+    dynamicPage(name: "debugLogs", title: "Debug Logs", install: false, uninstall: false){
+    	section(){
+            if(!state.ringRefreshKey) {
+				paragraph "Looks like the Ring Setup is not complete yet. Finish the setup and comeback." 
+            } else {
+                log.trace("debugLogs() -> Calling API to get Device Deatils")
+                def apiResponse = ringApiCall("devices")
+                try{
+                    if(apiResponse.data) {
+                    	apiResponse.data.body.each{ key, value -> 
+                        	 log.trace "debugLogs() -> Raw Device Response ${key} - ${value}"
+                        }
+                        paragraph "Device data is successfully logged in the AWS CloudWatch logs.\nCheck that under Cloud Watch > Log groups > <your lambad name>" 
+                    } else {
+                        paragraph "Something went wrong, check logs in the `Live Logging` section in SmartThings IDE."
+                    }
+                }catch (e) {
+                    log.error "debugLogs() -> Unable to complete call for Raw devices : $e"
+                    paragraph "Something went wrong, check logs in the `Live Logging` section in SmartThings IDE."
+                }
+            }
+        }
+    }
 }
 
 def ringApiSettings(){
