@@ -10,6 +10,7 @@
 
 ### Installation
 
+If you are updating from v3.3.0, follow below.
 - Deploy new Ring AWS Lambda.
   - Download the deployment.zip from [Release v3.4.0](https://github.com/asishrs/smartthings-ringalarmv2/releases/tag/v3.3.0)
   - Login to AWS Lambda https://console.aws.amazon.com/lambda/home?region=us-east-1#/functions 
@@ -19,6 +20,9 @@
   - Click on **Save** 
 - Update Ring Alarm SmartThings App. Follow instruction at https://github.com/asishrs/smartthings#installing-smartapps
 - Open the Ring Alarm SmartThings App and check the changes
+
+If you are updating from older versions, remove the Ring Alarm SmartThings App before following steps above.
+
 
 ## Release v3.3.0
 
