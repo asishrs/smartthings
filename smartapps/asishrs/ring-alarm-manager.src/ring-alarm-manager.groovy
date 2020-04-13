@@ -25,8 +25,8 @@ definition(
     namespace: "asishrs", author: "Asish Soudhamma",
 	description: "Manage the SmartThings Ring Alarm integration",
 	category: "My Apps",
-	iconUrl: "https://cdn.shopify.com/s/files/1/2922/1686/t/2/assets/ring_logo.png?8137716793231487980",
-	iconX2Url: "https://cdn.shopify.com/s/files/1/2922/1686/t/2/assets/ring_logo.png?8137716793231487980"
+	iconUrl: "https://terms-612db.firebaseapp.com/ringalarm/images/ring_logo.png",
+	iconX2Url: "https://terms-612db.firebaseapp.com/ringalarm/images/ring_logo.png"
 )
 
 preferences {
