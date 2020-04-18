@@ -12,7 +12,7 @@
 
 If you are updating from v3.3.0, follow below.
 - Deploy new Ring AWS Lambda.
-  - Download the deployment.zip from [Release v3.4.0](https://github.com/asishrs/smartthings-ringalarmv2/releases/tag/v3.3.0)
+  - Download the deployment.zip from [Release v3.4.0](https://github.com/asishrs/smartthings-ringalarmv2/releases/tag/v3.4.0)
   - Login to AWS Lambda https://console.aws.amazon.com/lambda/home?region=us-east-1#/functions 
   - Select your lambda for Ring Integration.
   - Confirm the **Code entry type** as _Upload a .zip file_
