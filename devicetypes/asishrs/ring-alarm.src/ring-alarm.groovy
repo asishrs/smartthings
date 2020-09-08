@@ -180,6 +180,12 @@ def createChildDevices(ringAPIData) {
             case 'listener.smoke-co' :
                 addSensor("Smoke CO", ringDevice.id, ringDevice.name)
                 break 
+            case 'alarm.smoke' :
+                addSensor("First Alert Smoke", ringDevice.id, ringDevice.name)
+                break 
+            case 'alarm.co' :
+                addSensor("First Alert CO", ringDevice.id, ringDevice.name)
+                break 
         }
     }
 }
@@ -340,14 +346,14 @@ def refreshDeviceStatus(ringDeviceStatus) {
                 }
                 break
             case 'range-extender.zwave' :
-            	//No Chile devices Yet for Range Extendar
+            	//No Child devices yet for Range Extender
                 if (device.faulted) 
                 	sendEvent(name: "ringrange${++rangeExtenderCount}", value: "offline", isStateChange: true, descriptionText: "${device.name} is Offline")
                 else
                     sendEvent(name: "ringrange${++rangeExtenderCount}", value: "online", isStateChange: true, descriptionText: "${device.name} is Online")
                 break
             case 'security-keypad' :
-            	//No Chile devices Yet for Range Extendar
+            	//No Child devices yet for Keypad
                 if (device.faulted) 
                 	sendEvent(name: "ringkeypad${++keypadCount}", value: "offline", isStateChange: true, descriptionText: "${device.name} is Offline")
                 else
@@ -355,30 +361,50 @@ def refreshDeviceStatus(ringDeviceStatus) {
                 break
             case 'sensor.motion' :
             	def motionSensor = childSensors?.find { it.deviceNetworkId == "${alarmNetworkId}-${device.id}"}
-				//log.trace "refreshDeviceStatus() -> Motion Sensor ${floodFreezeSensor} found with Id ${alarmNetworkId}-${device.id}, updating status."
+				//log.trace "refreshDeviceStatus() -> Motion Sensor ${motionSensor} found with Id ${alarmNetworkId}-${device.id}, updating status."
                 if(motionSensor) {
                     if (device.faulted) 
                         motionSensor.sendEvent(name: "motion", value: "active", isStateChange: true, descriptionText: "${device.name} - Motion Detected")
                     else
                         motionSensor.sendEvent(name: "motion", value: "inactive", isStateChange: true, , descriptionText: "${device.name} - Stopped Detecting Motion")
                 }
-                break  
+                break
             case 'listener.smoke-co' :
             	def smokeCOSensor = childSensors?.find { it.deviceNetworkId == "${alarmNetworkId}-${device.id}"}
-				//log.trace "refreshDeviceStatus() -> Motion Sensor ${floodFreezeSensor} found with Id ${alarmNetworkId}-${device.id}, updating status."
+				//log.trace "refreshDeviceStatus() -> Smoke/CO Sensor ${smokeCOSensor} found with Id ${alarmNetworkId}-${device.id}, updating status."
                 if(smokeCOSensor) {
                     if (device.faulted) 
                         smokeCOSensor.sendEvent(name: "smokeco", value: "alarm", isStateChange: true, descriptionText: "${device.name} - Detected Smoke/CO")
                     else
                         smokeCOSensor.sendEvent(name: "smokeco", value: "clear", isStateChange: true, , descriptionText: "${device.name} - clear")
                 }
-                break    
+                break
             case 'hub.redsky' :
-            	//No Chile devices Yet for Range Extendar
+            	//No Child devices yet for Hub
                 if (device.faulted) 
                 	sendEvent(name: "ringbase", value: "offline", isStateChange: true, descriptionText: "${device.name} is Offline")
                 else
                     sendEvent(name: "ringbase", value: "online", isStateChange: true, descriptionText: "${device.name} is Online")
+                break
+            case 'alarm.smoke' :
+            	def smokeSensor = childSensors?.find { it.deviceNetworkId == "${alarmNetworkId}-${device.id}"}
+				//log.trace "refreshDeviceStatus() -> Smoke Sensor ${smokeSensor} found with Id ${alarmNetworkId}-${device.id}, updating status."
+                if(smokeSensor) {
+                    if (device.faulted) 
+                        smokeSensor.sendEvent(name: "smoke", value: "alarm", isStateChange: true, descriptionText: "${device.name} - Detected Smoke")
+                    else
+                        smokeSensor.sendEvent(name: "smoke", value: "clear", isStateChange: true, , descriptionText: "${device.name} - clear")
+                }
+                break
+            case 'alarm.co' :
+            	def coSensor = childSensors?.find { it.deviceNetworkId == "${alarmNetworkId}-${device.id}"}
+				//log.trace "refreshDeviceStatus() -> CO Sensor ${coSensor} found with Id ${alarmNetworkId}-${device.id}, updating status."
+                if(coSensor) {
+                    if (device.faulted) 
+                        coSensor.sendEvent(name: "co", value: "alarm", isStateChange: true, descriptionText: "${device.name} - Detected CO")
+                    else
+                        coSensor.sendEvent(name: "co", value: "clear", isStateChange: true, , descriptionText: "${device.name} - clear")
+                }
                 break
         }
     }
